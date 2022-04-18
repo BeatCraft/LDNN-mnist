@@ -94,10 +94,10 @@ def main():
         return 0
     #
     
-    r.set_scale_input(1)
-    r.set_path("./wi.csv")
-    r.load()
-    r.update_weight()
+    #r.set_scale_input(1)
+    #r.set_path("./wi.csv")
+    #r.load()
+    #r.update_weight()
 
     if mode==0: # train
         print("batch_offset=%d" % (batch_offset))
@@ -113,7 +113,7 @@ def main():
         r.set_batch(data_size, num_class, batch_image, batch_label, batch_size, batch_offset)
         #ce = r.evaluate(1)
         #print(ce)
-        t.loop(1, 100)
+        t.loop(1, 500)
     elif mode==1: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)

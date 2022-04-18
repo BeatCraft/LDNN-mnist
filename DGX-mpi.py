@@ -33,7 +33,7 @@ def main():
     print("(%d, %d)" % (rank, size))
 
     # 0 : FC, 1 : CNN
-    config_id = 0
+    config_id = 1
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -62,7 +62,7 @@ def main():
     #ce = wk.evaluate()
     #print("[%d] %f" %(rank, ce))
     #return 0
-    wk.loop(50)
+    wk.loop(300)
 
     return 0
 #

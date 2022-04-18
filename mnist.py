@@ -99,8 +99,15 @@ def setup_dnn(my_gpu, config=0):
         
     if config==0: # fc
         setup_fc(r, 28*28)
+        r.set_path("./wi-fc.csv")
     elif config==1: # cnn
         setup_cnn(r, 28*28)
+        r.set_path("./wi-cnn.csv")
     #
+    
+    r.set_scale_input(1)
+    r.load()
+    r.update_weight()
+    
     return r
 
