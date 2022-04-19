@@ -16,7 +16,7 @@ import cupyx
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import util
 import core
-import gdx
+import dgx
 import train
 import mpi
 import mnist
@@ -45,7 +45,7 @@ def main():
     #processor_name = MPI.Get_processor_name()
     
     cp.cuda.Device(rank).use()
-    my_gpu = gdx.Gdx(rank)
+    my_gpu = dgx.Dgx(rank)
     
     r = mnist.setup_dnn(my_gpu, config_id)
     #r.set_scale_input(1)

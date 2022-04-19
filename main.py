@@ -113,7 +113,13 @@ def main():
         r.set_batch(data_size, num_class, batch_image, batch_label, batch_size, batch_offset)
         #ce = r.evaluate(1)
         #print(ce)
-        t.loop(1, 500)
+        
+        #layer = r.get_layer_at(2)
+        #if layer:
+        #    mse = layer.mse()
+        #    print(mse)
+        #
+        t.loop(1, 50, 1)
     elif mode==1: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
