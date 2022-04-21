@@ -56,6 +56,17 @@ def main():
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
     wk = mpi.worker(com, rank, size, r)
+    wk.mode = 1
+    wk.mse_idx = 4
+
+    if wk.mode==1:
+        r.propagate()
+        for i in range(1, 5):
+            layer = r.get_layer_at(i)
+            layer.lock = True
+        #
+    #
+
     #, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
     #wk = mpi.worker(com, rank, size, config_id, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
     #wk = worker(com, rank, size, package_id, config_id, "./wi.csv")

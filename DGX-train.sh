@@ -5,6 +5,6 @@ platform_id=0   # MBP : platform_id=0 and device_id=1
 device_id=0     # tr  : platform_id=1 and device_id=0
 config=1        # 0:FC, 1:CNN
 mode=0          # 0:train, 1:test
-size=1000       # not used in test
+size=10000       # not used in test
 
 python3 ./main.py $type_id $platform_id $device_id $config $mode $size

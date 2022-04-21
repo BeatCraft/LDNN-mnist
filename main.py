@@ -21,7 +21,7 @@ import exam
 if sys.platform.startswith('darwin'):
     import opencl
 else:
-    import gdx
+    import dgx
 #
 
 import mnist
@@ -81,7 +81,7 @@ def main():
         my_gpu = opencl.OpenCL(platform_id, device_id)
         my_gpu.set_kernel_code()
     elif type_id==1:
-        my_gpu = gdx.Gdx(1)
+        my_gpu = dgx.Dgx(1)
     else:
         print("error : undefined type =%d" % (type_id))
         return 0
@@ -111,6 +111,9 @@ def main():
         t = train.Train(r)
         r.prepare(batch_size, data_size, num_class)
         r.set_batch(data_size, num_class, batch_image, batch_label, batch_size, batch_offset)
+        t.mode = 0
+        t.mse_idx = 4
+
         #ce = r.evaluate(1)
         #print(ce)
         
@@ -119,7 +122,7 @@ def main():
         #    mse = layer.mse()
         #    print(mse)
         #
-        t.loop(1, 50, 1)
+        t.loop(10, 100)
     elif mode==1: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
