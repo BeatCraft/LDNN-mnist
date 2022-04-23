@@ -56,16 +56,41 @@ def main():
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
     wk = mpi.worker(com, rank, size, r)
-    wk.mode = 1
-    wk.mse_idx = 4
 
-    if wk.mode==1:
-        r.propagate()
-        for i in range(1, 5):
-            layer = r.get_layer_at(i)
-            layer.lock = True
+    if config_id==0:
+        wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
+        wk.mode_e = 0 # 0:ce, 1:mse
+        wk.loop(300)
+    else:
+        wk.mode_w = 1 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
+        wk.mode_e = 0 # 0:ce, 1:mse 
+        wk.mse_idx = 4
+
+        wk.mode_w = 0
+        wk.mode_e = 0
+        wk.loop(300)
+        return 0
+
+        for i in range(1000):
+            print(i)
+            if i % 2 == 1: # CNN
+                wk.mode_w = 2
+                for i in range(1, 5):
+                    layer = r.get_layer_at(i)
+                    layer.lock = False
+                #
+                wk.loop(1, 10)
+            else: # FC
+                wk.mode_w = 1
+                r.propagate()
+                for i in range(1, 5):
+                    layer = r.get_layer_at(i)
+                    layer.lock = True
+                #
+                wk.loop(1, 50)
+            #
         #
-    #
+    #   
 
     #, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
     #wk = mpi.worker(com, rank, size, config_id, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
@@ -73,7 +98,7 @@ def main():
     #ce = wk.evaluate()
     #print("[%d] %f" %(rank, ce))
     #return 0
-    wk.loop(300)
+    #wk.loop(300)
 
     return 0
 #
