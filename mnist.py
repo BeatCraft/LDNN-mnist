@@ -32,10 +32,10 @@ TEST_IMAGE_BATCH_PATH = BATCH_BASE_PATH + "test_image_batch.pickle"
 TEST_LABEL_BATCH_PATH = BATCH_BASE_PATH + "test_label_batch.pickle"
 
 # fpr MPI
-#MINI_BATCH_SIZE = [7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500]
-#MINI_BATCH_START = [0, 7500, 15000, 22500, 30000, 37500, 45000, 52500]
-MINI_BATCH_SIZE = [6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250]
-MINI_BATCH_START = [0, 6250, 12500, 18750, 25000, 31250, 37500, 43750]
+MINI_BATCH_SIZE = [7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500]
+MINI_BATCH_START = [0, 7500, 15000, 22500, 30000, 37500, 45000, 52500]
+#MINI_BATCH_SIZE = [6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250]
+#MINI_BATCH_START = [0, 6250, 12500, 18750, 25000, 31250, 37500, 43750]
 #MINI_BATCH_SIZE = [2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
 #MINI_BATCH_START = [0, 2500, 5000, 7500, 10000, 12500, 15000, 17500]
 
@@ -65,9 +65,13 @@ def setup_cnn(r, size):
     c = r.count_layers()
     hidden_1 = core.HiddenLayer(c, 7*7*16, 64, max_2, r._gpu)
     r.layers.append(hidden_1)
-    
+
     c = r.count_layers()
-    output = core.OutputLayer(c, 64, 10, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 64, 64, hidden_1, r._gpu)
+    r.layers.append(hidden_2)
+
+    c = r.count_layers()
+    output = core.OutputLayer(c, 64, 10, hidden_2, r._gpu)
     r.layers.append(output)
     
 def setup_fc(r, size):

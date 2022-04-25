@@ -66,29 +66,29 @@ def main():
         wk.mode_e = 0 # 0:ce, 1:mse 
         wk.mse_idx = 4
 
-        wk.mode_w = 0
-        wk.mode_e = 0
-        wk.loop(300)
-        return 0
+        #wk.mode_w = 0
+        #wk.mode_e = 0
+        #for idx in range(300):
+        #    wk.loop_k(idx, 300)
+        ##
+        #return 0
 
-        for i in range(1000):
-            print(i)
-            if i % 2 == 1: # CNN
-                wk.mode_w = 2
-                for i in range(1, 5):
-                    layer = r.get_layer_at(i)
-                    layer.lock = False
-                #
-                wk.loop(1, 10)
-            else: # FC
-                wk.mode_w = 1
-                r.propagate()
-                for i in range(1, 5):
-                    layer = r.get_layer_at(i)
-                    layer.lock = True
-                #
-                wk.loop(1, 50)
+        for idx in range(10000):
+            #print(i)
+            wk.mode_w = 1
+            r.propagate()
+            for i in range(1, 5): # FC
+                layer = r.get_layer_at(i)
+                layer.lock = True
             #
+            wk.loop_k(idx, 1)
+
+            wk.mode_w = 2
+            for i in range(1, 5): #CNN
+                layer = r.get_layer_at(i)
+                layer.lock = False
+            #
+            wk.loop_k(idx, 1)
         #
     #   
 

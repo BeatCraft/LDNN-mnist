@@ -122,7 +122,7 @@ def main():
         #    mse = layer.mse()
         #    print(mse)
         #
-        t.loop(10, 100)
+        t.loop(50)
     elif mode==1: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
