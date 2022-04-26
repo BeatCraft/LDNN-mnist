@@ -107,22 +107,38 @@ def main():
         data_size = mnist.IMAGE_SIZE
         num_class = mnist.NUM_CLASS
         batch_offset = 0
-        #print(batch_image[0])
+        
         t = train.Train(r)
         r.prepare(batch_size, data_size, num_class)
         r.set_batch(data_size, num_class, batch_image, batch_label, batch_size, batch_offset)
-        t.mode = 0
-        t.mse_idx = 4
-
-        #ce = r.evaluate(1)
-        #print(ce)
         
-        #layer = r.get_layer_at(2)
-        #if layer:
-        #    mse = layer.mse()
-        #    print(mse)
+        if config==0: # all
+            w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            for idx in range(50):
+                t.loop_k(w_list, "all", idx, 1)
+            #
+        elif config==1: # separate
+            fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            print(len(fc_w_list))
+            cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
+            print(len(cnn_w_list))
+            for idx in range(50):
+                t.mode_w = 1
+                r.propagate()
+                for i in range(1, 5): # FC
+                    layer = r.get_layer_at(i)
+                    layer.lock = True
+                #
+                t.loop_k(fc_w_list, "fc", idx, 1)
+                
+                t.mode_w = 2
+                for i in range(1, 5): #CNN
+                    layer = r.get_layer_at(i)
+                    layer.lock = False
+                #
+                t.loop_k(cnn_w_list, "cnn", idx, 1)
+            #
         #
-        t.loop(50)
     elif mode==1: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
