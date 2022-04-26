@@ -52,12 +52,12 @@ def main():
     
     wk = mpi.worker(com, rank, size, r)
     if config_id==0:
-        if self._rank==0:
-            w_list = self.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+        if rank==0:
+            w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
             w_list = []
         #
-        w_list = self._com.bcast(w_list, root=0)
+        w_list = com.bcast(w_list, root=0)
             
         wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
         wk.mode_e = 0 # 0:ce, 1:mse
@@ -65,19 +65,30 @@ def main():
             wk.loop_k(w_list, "all", idx, 1)
         #
     else:
-        if self._rank==0:
-            fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
+        if rank==0:
+            fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
             fc_w_list = []
+        #
+        fc_w_list = com.bcast(fc_w_list, root=0)
+
+        if rank==0:
+            cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
+        else:
             cnn_w_list = []
         #
-        fc_w_list = self._com.bcast(fc_w_list, root=0)
-        cnn_w_list = self._com.bcast(cnn_w_list, root=0)
+        cnn_w_list = com.bcast(cnn_w_list, root=0)
             
-        wk.mode_w = 1 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
-        wk.mode_e = 0 # 0:ce, 1:mse 
-        wk.mse_idx = 4
+        #wk.mode_w = 1 # 0:all, 1:fc, 2:cnn, 3:single cnn, 4:regression
+        #wk.mode_e = 0 # 0:ce, 1:mse 
+        #wk.mse_idx = 4
+
+        #r.propagate()
+        #ek = r.evaluate()
+        #print(rank, ek)
+        #ek = wk.evaluate()
+        #print(rank, ek)
+        #return 0
 
         for idx in range(1000):
             wk.mode_w = 1
@@ -95,6 +106,13 @@ def main():
             #
             wk.loop_k(cnn_w_list, "cnn", idx, 1)
         #
+
+        #r.propagate()
+        #ek = r.evaluate()
+        #print(rank, ek)
+        #
+        #ek = wk.evaluate()
+        #print(rank, ek)
     #
     
     return 0
