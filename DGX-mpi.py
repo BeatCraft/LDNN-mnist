@@ -32,8 +32,8 @@ def main():
     size = com.Get_size()
     print("(%d, %d)" % (rank, size))
 
-    # 0 : FC, 1 : CNN
-    config_id = 1
+    #config_id = 0 # FC
+    config_id = 1 # CNN
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -43,63 +43,60 @@ def main():
     batch_size = mnist.MINI_BATCH_SIZE[rank]
         
     #processor_name = MPI.Get_processor_name()
-    
     cp.cuda.Device(rank).use()
     my_gpu = dgx.Dgx(rank)
     
     r = mnist.setup_dnn(my_gpu, config_id)
-    #r.set_scale_input(1)
-    #r.set_path("./wi.csv")
-    #r.load()
-    #r.update_weight()
     r.prepare(batch_size, data_size, num_class)
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
     wk = mpi.worker(com, rank, size, r)
-
     if config_id==0:
+        if self._rank==0:
+            w_list = self.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+        else:
+            w_list = []
+        #
+        w_list = self._com.bcast(w_list, root=0)
+            
         wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
         wk.mode_e = 0 # 0:ce, 1:mse
-        wk.loop(300)
+        for idx in range(1000):
+            wk.loop_k(w_list, "all", idx, 1)
+        #
     else:
+        if self._rank==0:
+            fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
+        else:
+            fc_w_list = []
+            cnn_w_list = []
+        #
+        fc_w_list = self._com.bcast(fc_w_list, root=0)
+        cnn_w_list = self._com.bcast(cnn_w_list, root=0)
+            
         wk.mode_w = 1 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
         wk.mode_e = 0 # 0:ce, 1:mse 
         wk.mse_idx = 4
 
-        #wk.mode_w = 0
-        #wk.mode_e = 0
-        #for idx in range(300):
-        #    wk.loop_k(idx, 300)
-        ##
-        #return 0
-
-        for idx in range(10000):
-            #print(i)
+        for idx in range(1000):
             wk.mode_w = 1
             r.propagate()
             for i in range(1, 5): # FC
                 layer = r.get_layer_at(i)
                 layer.lock = True
             #
-            wk.loop_k(idx, 1)
+            wk.loop_k(fc_w_list, "fc", idx, 1)
 
             wk.mode_w = 2
             for i in range(1, 5): #CNN
                 layer = r.get_layer_at(i)
                 layer.lock = False
             #
-            wk.loop_k(idx, 1)
+            wk.loop_k(cnn_w_list, "cnn", idx, 1)
         #
-    #   
-
-    #, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
-    #wk = mpi.worker(com, rank, size, config_id, "./wi.csv", data_size, num_class, train_data_batch, train_label_batch, batch_offset, batch_size)
-    #wk = worker(com, rank, size, package_id, config_id, "./wi.csv")
-    #ce = wk.evaluate()
-    #print("[%d] %f" %(rank, ce))
-    #return 0
-    #wk.loop(300)
-
+    #
+    
     return 0
 #
 #

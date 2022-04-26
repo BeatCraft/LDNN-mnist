@@ -119,9 +119,9 @@ def main():
             #
         elif config==1: # separate
             fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            print(len(fc_w_list))
+            #print(len(fc_w_list))
             cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
-            print(len(cnn_w_list))
+            #print(len(cnn_w_list))
             for idx in range(50):
                 t.mode_w = 1
                 r.propagate()
