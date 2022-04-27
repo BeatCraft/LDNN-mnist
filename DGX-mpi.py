@@ -34,6 +34,7 @@ def main():
 
     #config_id = 0 # FC
     config_id = 1 # CNN
+    mode = 0
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -53,7 +54,7 @@ def main():
     wk = mpi.worker(com, rank, size, r)
     if config_id==0:
         if rank==0:
-            w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
             w_list = []
         #
@@ -65,54 +66,51 @@ def main():
             wk.loop_k(w_list, "all", idx, 1)
         #
     else:
-        if rank==0:
-            fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-        else:
-            fc_w_list = []
-        #
-        fc_w_list = com.bcast(fc_w_list, root=0)
+        if mode==0: # all
+            if rank==0:
+                w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            else:
+                w_list = []
+            #
+            w_list = com.bcast(w_list, root=0)
 
-        if rank==0:
-            cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
-        else:
-            cnn_w_list = []
-        #
-        cnn_w_list = com.bcast(cnn_w_list, root=0)
+            wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
+            wk.mode_e = 0 # 0:ce, 1:mse
+            for idx in range(10000):
+                wk.loop_k(w_list, "all", idx, 1)
+            #
+        else: # separate
+            if rank==0:
+                fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+            else:
+                fc_w_list = []
+            #
+            fc_w_list = com.bcast(fc_w_list, root=0)
+
+            if rank==0:
+                cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
+            else:
+                cnn_w_list = []
+            #
+            cnn_w_list = com.bcast(cnn_w_list, root=0)
             
-        #wk.mode_w = 1 # 0:all, 1:fc, 2:cnn, 3:single cnn, 4:regression
-        #wk.mode_e = 0 # 0:ce, 1:mse 
-        #wk.mse_idx = 4
+            for idx in range(1000):
+                wk.mode_w = 1
+                r.propagate()
+                for i in range(1, 5): # FC
+                    layer = r.get_layer_at(i)
+                    layer.lock = True
+                #
+                wk.loop_k(fc_w_list, "fc", idx, 1)
 
-        #r.propagate()
-        #ek = r.evaluate()
-        #print(rank, ek)
-        #ek = wk.evaluate()
-        #print(rank, ek)
-        #return 0
-
-        for idx in range(1000):
-            wk.mode_w = 1
-            r.propagate()
-            for i in range(1, 5): # FC
-                layer = r.get_layer_at(i)
-                layer.lock = True
+                wk.mode_w = 2
+                for i in range(1, 5): #CNN
+                    layer = r.get_layer_at(i)
+                    layer.lock = False
+                #
+                wk.loop_k(cnn_w_list, "cnn", idx, 1)
             #
-            wk.loop_k(fc_w_list, "fc", idx, 1)
-
-            wk.mode_w = 2
-            for i in range(1, 5): #CNN
-                layer = r.get_layer_at(i)
-                layer.lock = False
-            #
-            wk.loop_k(cnn_w_list, "cnn", idx, 1)
         #
-
-        #r.propagate()
-        #ek = r.evaluate()
-        #print(rank, ek)
-        #
-        #ek = wk.evaluate()
-        #print(rank, ek)
     #
     
     return 0

@@ -115,13 +115,12 @@ def main():
         if config==0: # all
             w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
             for idx in range(50):
-                t.loop_k(w_list, "all", idx, 1)
+                t.loop_k(w_list, "all", idx, 1, 50)
             #
         elif config==1: # separate
             fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            #print(len(fc_w_list))
             cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
-            #print(len(cnn_w_list))
+            
             for idx in range(50):
                 t.mode_w = 1
                 r.propagate()
@@ -129,14 +128,14 @@ def main():
                     layer = r.get_layer_at(i)
                     layer.lock = True
                 #
-                t.loop_k(fc_w_list, "fc", idx, 1)
+                t.loop_k(fc_w_list, "fc", idx, 1, 50)
                 
                 t.mode_w = 2
                 for i in range(1, 5): #CNN
                     layer = r.get_layer_at(i)
                     layer.lock = False
                 #
-                t.loop_k(cnn_w_list, "cnn", idx, 1)
+                t.loop_k(cnn_w_list, "cnn", idx, 1, 20)
             #
         #
     elif mode==1: # test
