@@ -34,7 +34,7 @@ def main():
 
     #config_id = 0 # FC
     config_id = 1 # CNN
-    mode = 0
+    mode = 1
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -101,14 +101,14 @@ def main():
                     layer = r.get_layer_at(i)
                     layer.lock = True
                 #
-                wk.loop_k(fc_w_list, "fc", idx, 1)
+                wk.loop_k(fc_w_list, "fc", idx, 1, 50)
 
                 wk.mode_w = 2
                 for i in range(1, 5): #CNN
                     layer = r.get_layer_at(i)
                     layer.lock = False
                 #
-                wk.loop_k(cnn_w_list, "cnn", idx, 1)
+                wk.loop_k(cnn_w_list, "cnn", idx, 1, 20)
             #
         #
     #
