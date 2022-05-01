@@ -2,3 +2,4 @@ data/
 batch/
 __pycache__/
 *.csv
+work/

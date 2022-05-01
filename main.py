@@ -87,7 +87,11 @@ def main():
         return 0
     #
     
-    r = mnist.setup_dnn(my_gpu, config)
+    if config==0:
+        r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
+    elif config==1:
+        r = mnist.setup_dnn(my_gpu, config, "./wi-cnn.csv")
+    #
     if r:
         pass
     else:
@@ -139,9 +143,13 @@ def main():
             #
         #
     elif mode==1: # test
-        batch_size = mnist.TEST_BATCH_SIZE
-        batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
-        batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
+        #batch_size = mnist.TEST_BATCH_SIZE
+        #batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
+        #batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
+        batch_size = mnist.TRAIN_BATCH_SIZE
+        batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
+        batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
+        
         data_size = mnist.IMAGE_SIZE
         num_class = mnist.NUM_CLASS
         

@@ -63,15 +63,15 @@ def setup_cnn(r, size):
     r.layers.append(max_2)
     
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 7*7*16, 64, max_2, r._gpu)
+    hidden_1 = core.HiddenLayer(c, 7*7*16, 128, max_2, r._gpu)
     r.layers.append(hidden_1)
 
     c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, 64, 64, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 128, 128, hidden_1, r._gpu)
     r.layers.append(hidden_2)
 
     c = r.count_layers()
-    output = core.OutputLayer(c, 64, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 128, 10, hidden_2, r._gpu)
     r.layers.append(output)
     
 def setup_fc(r, size):
@@ -97,21 +97,20 @@ def setup_fc(r, size):
     output = core.OutputLayer(c, 64, 10, hidden_3, r._gpu)
     r.layers.append(output)
 
-def setup_dnn(my_gpu, config=0):
+def setup_dnn(my_gpu, config, path):
     r = core.Roster()
     r.set_gpu(my_gpu)
         
     if config==0: # fc
-        setup_fc(r, 28*28)
-        r.set_path("./wi-fc.csv")
+        setup_fc(r, IMAGE_SIZE) # 28*28
+        r.set_path(path)
     elif config==1: # cnn
-        setup_cnn(r, 28*28)
-        r.set_path("./wi-cnn.csv")
+        setup_cnn(r, IMAGE_SIZE) # 28*28
+        r.set_path(path)
     #
     
     r.set_scale_input(1)
     r.load()
     r.update_weight()
-    
     return r
 
