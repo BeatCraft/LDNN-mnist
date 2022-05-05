@@ -38,7 +38,7 @@ def main():
     config = 1 # CNN
     mode = 0
     batch_size_full = mnist.TRAIN_BATCH_SIZE
-    batch_size = 100
+    batch_size = 200
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_offset = 0
@@ -47,7 +47,7 @@ def main():
     dh.load("./work/0-incorrect_data.pickle", "./work/0-incorrect_label.pickle")
     dh.shuffle()
     
-    head, tail = dh.divide(10)
+    head, tail = dh.divide(20)
     print(len(head), len(tail))
     
     h1d = dh.flatten(head)

@@ -33,8 +33,9 @@ def main():
     print("(%d, %d)" % (rank, size))
 
     #config_id = 0 # FC
-    config_id = 1 # CNN
-    mode = 1
+    #config_id = 1 # CNN all
+    config_id = 2 # CNN separate
+    #mode = 1
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -47,7 +48,14 @@ def main():
     cp.cuda.Device(rank).use()
     my_gpu = dgx.Dgx(rank)
     
-    r = mnist.setup_dnn(my_gpu, config_id)
+    #r = mnist.setup_dnn(my_gpu, config_id)
+    if config_id==0:
+        r = mnist.setup_dnn(my_gpu, config_id, "./wi-fc.csv")
+    elif config_id==1:
+        r = mnist.setup_dnn(my_gpu, config_id, "./wi-cnn.csv")
+    elif config_id==2:
+        r = mnist.setup_dnn(my_gpu, config_id, "./wi-cnn-2.csv")
+    #
     r.prepare(batch_size, data_size, num_class)
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
@@ -60,56 +68,55 @@ def main():
         #
         w_list = com.bcast(w_list, root=0)
             
-        wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
+        #wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
         wk.mode_e = 0 # 0:ce, 1:mse
         for idx in range(1000):
             wk.loop_k(w_list, "all", idx, 1)
         #
-    else:
-        if mode==0: # all
-            if rank==0:
-                w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            else:
-                w_list = []
-            #
-            w_list = com.bcast(w_list, root=0)
+        
+    elif config_id==1: # CNN all
+        if rank==0:
+            w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+        else:
+            w_list = []
+        #
+        w_list = com.bcast(w_list, root=0)
 
-            wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
-            wk.mode_e = 0 # 0:ce, 1:mse
-            for idx in range(10000):
-                wk.loop_k(w_list, "all", idx, 1)
-            #
-        else: # separate
-            if rank==0:
-                fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            else:
-                fc_w_list = []
-            #
-            fc_w_list = com.bcast(fc_w_list, root=0)
+        #wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
+        wk.mode_e = 0 # 0:ce, 1:mse
+        for idx in range(50):
+            wk.loop_k(w_list, "all", idx, 20)
+        #
+    elif config_id==2: # CNN separate
+        if rank==0:
+            fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+        else:
+            fc_w_list = []
+        #
+        fc_w_list = com.bcast(fc_w_list, root=0)
 
-            if rank==0:
-                cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
-            else:
-                cnn_w_list = []
-            #
-            cnn_w_list = com.bcast(cnn_w_list, root=0)
+        if rank==0:
+            cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
+        else:
+            cnn_w_list = []
+        #
+        cnn_w_list = com.bcast(cnn_w_list, root=0)
             
-            for idx in range(1000):
-                wk.mode_w = 1
-                r.propagate()
-                for i in range(1, 5): # FC
-                    layer = r.get_layer_at(i)
-                    layer.lock = True
-                #
-                wk.loop_k(fc_w_list, "fc", idx, 1, 50)
-
-                wk.mode_w = 2
-                for i in range(1, 5): #CNN
-                    layer = r.get_layer_at(i)
-                    layer.lock = False
-                #
-                wk.loop_k(cnn_w_list, "cnn", idx, 1, 20)
+        for idx in range(50):
+            #wk.mode_w = 1
+            r.propagate()
+            for i in range(1, 5): # FC
+                layer = r.get_layer_at(i)
+                layer.lock = True
             #
+            wk.loop_k(fc_w_list, "fc", idx, 1, 20)
+
+            #wk.mode_w = 2
+            for i in range(1, 5): #CNN
+                layer = r.get_layer_at(i)
+                layer.lock = False
+            #
+            wk.loop_k(cnn_w_list, "cnn", idx, 1, 10)
         #
     #
     

@@ -16,7 +16,7 @@ import plat
 import util
 import core
 #import train
-import exam
+#import exam
 import dhandle
     
 if sys.platform.startswith('darwin'):
@@ -38,28 +38,14 @@ def main():
     config = 1 # CNN
     mode = 0
     batch_size_full = mnist.TRAIN_BATCH_SIZE
-    batch_size = 400
+    #batch_size = 100
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_offset = 0
     
-    dh = dhandle.DataHandler(data_size, num_class)
-    dh.load(mnist.TRAIN_IMAGE_BATCH_PATH, mnist.TRAIN_LABEL_BATCH_PATH)
-    dh.shuffle()
-        
-    head, tail = dh.divide(40)
-    print(len(head), len(tail))
-    
-    h1d = dh.flatten(head)
-    t1d = dh.flatten(tail)
-    print(len(h1d), len(t1d))
-    
-    train_batch_data, train_batch_label = dh.makeBatch(h1d)
-    test_batch_data, test_batch_label = dh.makeBatch(t1d)
-    
-    dh.saveBatch(train_batch_data, train_batch_label, "./work/0-train_data.pickle", "./work/0-train_label.pickle")
-    dh.saveBatch(test_batch_data, test_batch_label, "./work/0-test_data.pickle", "./work/0-test_label.pickle")
-    
+    test_batch_data = util.pickle_load("./work/3-test_data.pickle")
+    test_batch_label = util.pickle_load("./work/3-test_label.pickle")
+    batch_size = len(test_batch_label)
     
     if plat.ID==0:   # MBP
         my_gpu = opencl.OpenCL(0, 1)
@@ -73,16 +59,25 @@ def main():
         print("error : undefined platform")
         return 0
     #
-    r = mnist.setup_dnn(my_gpu, config, "./work/0-wi-cnn.csv")
+    r = mnist.setup_dnn(my_gpu, config, "./work/3-wi-cnn.csv")
     if r:
         pass
     else:
         return 0
     #
-
-    r.prepare(batch_size, data_size, num_class)
-    r.set_batch(data_size, num_class, train_batch_data, train_batch_label, batch_size, 0)    
-    dhandle.train_loop(r)
+    
+    correct, incorrect = dhandle.test_loop(r, test_batch_data, test_batch_label, batch_size, data_size, num_class, batch_offset)
+    
+    print(len(correct), len(incorrect))
+    
+    dh = dhandle.DataHandler(data_size, num_class)
+    dh.load("./work/3-test_data.pickle", "./work/3-test_label.pickle")
+    
+    correct_data, correct_label = dh.extract(correct)
+    dh.saveBatch(correct_data, correct_label, "./work/3-correct_data.pickle", "./work/3-correct_label.pickle")
+    
+    incorrect_data, incorrect_label = dh.extract(incorrect)
+    dh.saveBatch(incorrect_data, incorrect_label, "./work/3-incorrect_data.pickle", "./work/3-incorrect_label.pickle")
     return 0
 #
 #

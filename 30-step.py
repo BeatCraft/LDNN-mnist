@@ -38,16 +38,16 @@ def main():
     config = 1 # CNN
     mode = 0
     batch_size_full = mnist.TRAIN_BATCH_SIZE
-    batch_size = 400
+    batch_size = 100
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_offset = 0
     
     dh = dhandle.DataHandler(data_size, num_class)
-    dh.load(mnist.TRAIN_IMAGE_BATCH_PATH, mnist.TRAIN_LABEL_BATCH_PATH)
+    dh.load("./work/2-incorrect_data.pickle", "./work/2-incorrect_label.pickle")
     dh.shuffle()
-        
-    head, tail = dh.divide(40)
+    
+    head, tail = dh.divide(10)
     print(len(head), len(tail))
     
     h1d = dh.flatten(head)
@@ -57,9 +57,8 @@ def main():
     train_batch_data, train_batch_label = dh.makeBatch(h1d)
     test_batch_data, test_batch_label = dh.makeBatch(t1d)
     
-    dh.saveBatch(train_batch_data, train_batch_label, "./work/0-train_data.pickle", "./work/0-train_label.pickle")
-    dh.saveBatch(test_batch_data, test_batch_label, "./work/0-test_data.pickle", "./work/0-test_label.pickle")
-    
+    dh.saveBatch(train_batch_data, train_batch_label, "./work/3-train_data.pickle", "./work/3-train_label.pickle")
+    dh.saveBatch(test_batch_data, test_batch_label, "./work/3-test_data.pickle", "./work/3-test_label.pickle")
     
     if plat.ID==0:   # MBP
         my_gpu = opencl.OpenCL(0, 1)
@@ -73,7 +72,7 @@ def main():
         print("error : undefined platform")
         return 0
     #
-    r = mnist.setup_dnn(my_gpu, config, "./work/0-wi-cnn.csv")
+    r = mnist.setup_dnn(my_gpu, config, "./work/3-wi-cnn.csv")
     if r:
         pass
     else:

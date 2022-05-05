@@ -17,11 +17,16 @@ import util
 import core
 import train
 import exam
+import plat
 
 if sys.platform.startswith('darwin'):
     import opencl
 else:
-    import dgx
+    if plat.ID==1:
+        import opencl
+    elif plat.ID==2:
+        import dgx
+    #
 #
 
 import mnist
@@ -91,6 +96,8 @@ def main():
         r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
     elif config==1:
         r = mnist.setup_dnn(my_gpu, config, "./wi-cnn.csv")
+    elif config==2:
+        r = mnist.setup_dnn(my_gpu, config, "./wi-cnn-2.csv")
     #
     if r:
         pass
@@ -98,11 +105,6 @@ def main():
         return 0
     #
     
-    #r.set_scale_input(1)
-    #r.set_path("./wi.csv")
-    #r.load()
-    #r.update_weight()
-
     if mode==0: # train
         print("batch_offset=%d" % (batch_offset))
         
@@ -116,12 +118,19 @@ def main():
         r.prepare(batch_size, data_size, num_class)
         r.set_batch(data_size, num_class, batch_image, batch_label, batch_size, batch_offset)
         
-        if config==0: # all
+        if config==0 or config==1: # all
             w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            for idx in range(50):
-                t.loop_k(w_list, "all", idx, 1, 50)
+            for idx in range(1):
+                t.loop_sa(w_list, "all", idx, 10, 10)
             #
-        elif config==1: # separate
+        elif config==2: # separate
+            #r.propagate(1)
+            #ce = r.evaluate(0)
+            #r.propagate(1)
+            #ce = r.get_cross_entropy(1)
+            #print(ce)
+            #return 0
+        
             fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
             cnn_w_list = t.make_w_list([core.LAYER_TYPE_CONV_4])
             
@@ -132,23 +141,23 @@ def main():
                     layer = r.get_layer_at(i)
                     layer.lock = True
                 #
-                t.loop_k(fc_w_list, "fc", idx, 1, 50)
+                t.loop_sa(fc_w_list, "fc", idx, 1, 20)
                 
                 t.mode_w = 2
                 for i in range(1, 5): #CNN
                     layer = r.get_layer_at(i)
                     layer.lock = False
                 #
-                t.loop_k(cnn_w_list, "cnn", idx, 1, 20)
+                t.loop_sa(cnn_w_list, "cnn", idx, 1, 10)
             #
         #
     elif mode==1: # test
-        #batch_size = mnist.TEST_BATCH_SIZE
-        #batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
-        #batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
-        batch_size = mnist.TRAIN_BATCH_SIZE
-        batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
-        batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
+        batch_size = mnist.TEST_BATCH_SIZE
+        batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
+        batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
+        #batch_size = mnist.TRAIN_BATCH_SIZE
+        #batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
+        #batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
         
         data_size = mnist.IMAGE_SIZE
         num_class = mnist.NUM_CLASS

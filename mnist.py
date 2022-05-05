@@ -107,6 +107,9 @@ def setup_dnn(my_gpu, config, path):
     elif config==1: # cnn
         setup_cnn(r, IMAGE_SIZE) # 28*28
         r.set_path(path)
+    elif config==2: # cnn
+        setup_cnn(r, IMAGE_SIZE) # 28*28
+        r.set_path(path)
     #
     
     r.set_scale_input(1)
