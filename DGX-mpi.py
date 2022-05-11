@@ -33,8 +33,8 @@ def main():
     print("(%d, %d)" % (rank, size))
 
     #config_id = 0 # FC
-    #config_id = 1 # CNN all
-    config_id = 2 # CNN separate
+    config_id = 1 # CNN all
+    #config_id = 2 # CNN separate
     #mode = 1
     #
     data_size = mnist.IMAGE_SIZE
@@ -81,11 +81,9 @@ def main():
             w_list = []
         #
         w_list = com.bcast(w_list, root=0)
-
-        #wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
         wk.mode_e = 0 # 0:ce, 1:mse
-        for idx in range(50):
-            wk.loop_k(w_list, "all", idx, 20)
+        for idx in range(100):
+            wk.loop_sa(w_list, "all", idx, 1, 50)
         #
     elif config_id==2: # CNN separate
         if rank==0:

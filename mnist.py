@@ -36,8 +36,9 @@ TEST_LABEL_BATCH_PATH = BATCH_BASE_PATH + "test_label_batch.pickle"
 #MINI_BATCH_START = [0, 7500, 15000, 22500, 30000, 37500, 45000, 52500]
 #MINI_BATCH_SIZE = [6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250]
 #MINI_BATCH_START = [0, 6250, 12500, 18750, 25000, 31250, 37500, 43750]
-MINI_BATCH_SIZE = [2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
-MINI_BATCH_START = [0, 2500, 5000, 7500, 10000, 12500, 15000, 17500]
+MBSIZE = 7500 # 1000, 2500, 6250, 7500
+MINI_BATCH_SIZE = [MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE]
+MINI_BATCH_START = [MBSIZE*0, MBSIZE*1, MBSIZE*2, MBSIZE*3, MBSIZE*4, MBSIZE*5, MBSIZE*6, MBSIZE*7]
 
 def setup_cnn(r, size):
     print("setup_cnn(%d)" % (size))
@@ -47,31 +48,23 @@ def setup_cnn(r, size):
     r.layers.append(input)
     
     c = r.count_layers()
-    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 8, input, r._gpu)
+    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 6, input, r._gpu)
     r.layers.append(cnn_1)
                 
     c = r.count_layers()
-    max_1 = core.MaxLayer(c, 8, 28, 28, cnn_1, r._gpu)
+    max_1 = core.MaxLayer(c, 6, 28, 28, cnn_1, r._gpu)
     r.layers.append(max_1)
     
     c = r.count_layers()
-    cnn_2 = core.Conv_4_Layer(c, 14, 14, 8, 16, max_1, r._gpu)
-    r.layers.append(cnn_2)
-    
-    c = r.count_layers()
-    max_2 = core.MaxLayer(c, 16, 14, 14, cnn_2, r._gpu)
-    r.layers.append(max_2)
-    
-    c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 7*7*16, 128, max_2, r._gpu)
+    hidden_1 = core.HiddenLayer(c, 14*14*6, 64, max_1, r._gpu)
     r.layers.append(hidden_1)
 
     c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, 128, 128, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 64, 64, hidden_1, r._gpu)
     r.layers.append(hidden_2)
-
+    
     c = r.count_layers()
-    output = core.OutputLayer(c, 128, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 64, 10, hidden_2, r._gpu)
     r.layers.append(output)
     
 def setup_fc(r, size):

@@ -120,8 +120,8 @@ def main():
         
         if config==0 or config==1: # all
             w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-            for idx in range(1):
-                t.loop_sa(w_list, "all", idx, 10, 10)
+            for idx in range(100):
+                t.loop_sa3(w_list, "all", idx, 1, 50)
             #
         elif config==2: # separate
             #r.propagate(1)
@@ -141,14 +141,14 @@ def main():
                     layer = r.get_layer_at(i)
                     layer.lock = True
                 #
-                t.loop_sa(fc_w_list, "fc", idx, 1, 20)
+                t.loop_sa3(fc_w_list, "fc", idx, 1, 50)
                 
                 t.mode_w = 2
                 for i in range(1, 5): #CNN
                     layer = r.get_layer_at(i)
                     layer.lock = False
                 #
-                t.loop_sa(cnn_w_list, "cnn", idx, 1, 10)
+                t.loop_sa3(cnn_w_list, "cnn", idx, 1, 20)
             #
         #
     elif mode==1: # test
