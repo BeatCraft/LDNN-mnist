@@ -35,7 +35,6 @@ def main():
     config_id = 0 # FC
     #config_id = 1 # CNN all
     #config_id = 2 # CNN separate
-    #mode = 1
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -43,12 +42,10 @@ def main():
     train_label_batch = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
     batch_offset = mnist.MINI_BATCH_START[rank]
     batch_size = mnist.MINI_BATCH_SIZE[rank]
-        
-    #processor_name = MPI.Get_processor_name()
+    
     cp.cuda.Device(rank).use()
     my_gpu = dgx.Dgx(rank)
     
-    #r = mnist.setup_dnn(my_gpu, config_id)
     if config_id==0:
         r = mnist.setup_dnn(my_gpu, config_id, "./wi-fc.csv")
     elif config_id==1:
@@ -60,6 +57,8 @@ def main():
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
     wk = mpi.worker(com, rank, size, r)
+    wk.mode_e = 0 # 0:ce, 1:mse
+    
     if config_id==0:
         if rank==0:
             w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
@@ -67,13 +66,10 @@ def main():
             w_list = []
         #
         w_list = com.bcast(w_list, root=0)
-            
-        #wk.mode_w = 0 # 0:normal, 1:fc, 2:cnn, 3:single cnn, 4:regression
-        wk.mode_e = 0 # 0:ce, 1:mse
-        for idx in range(1000):
-            wk.loop_k(w_list, "all", idx, 1)
-        #
         
+        for i in range(10):
+            ce = wk.loop_sa5(w_list, "all")
+        #  
     elif config_id==1: # CNN all
         if rank==0:
             w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
