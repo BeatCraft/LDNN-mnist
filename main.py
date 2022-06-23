@@ -147,7 +147,7 @@ def main():
                 r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
                 ce = r.evaluate()
                 
-                log = "%d, %d, %f, %f\n" % (0, batch_size, ce, ac)
+                log = "%d, %d, %f, %f" % (0, batch_size, ce, ac)
                 output("./log.csv", log)
             else:
                 r.prepare(batch_size, data_size, num_class)
@@ -156,7 +156,7 @@ def main():
             ce = t.loop_sa5(w_list, "all")
             ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
             #
-            log = "%d, %d, %f, %f\n" % (i+1, batch_size, ce, ac)
+            log = "%d, %d, %f, %f" % (i+1, batch_size, ce, ac)
             output("./log.csv", log)
         #
     elif config==2: # separate
