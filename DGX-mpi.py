@@ -32,8 +32,8 @@ def main():
     size = com.Get_size()
     print("(%d, %d)" % (rank, size))
 
-    #config_id = 0 # FC
-    config_id = 1 # CNN all
+    config_id = 0 # FC
+    #config_id = 1 # CNN all
     #config_id = 2 # CNN separate
     #mode = 1
     #
