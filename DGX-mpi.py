@@ -19,6 +19,7 @@ import core
 import dgx
 import train
 import mpi
+import exam
 import mnist
 
 sys.setrecursionlimit(10000)
@@ -79,10 +80,10 @@ def main():
         for i in range(100):
             ce = wk.loop_sa5(i, w_list, "all")
             if rank==0:
-                ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
-                log = "%d, %d, %f, %f" % (i+1, batch_size, ce, ac)
+                ac = exam.classification(r, data_size, num_class, test_batch_size, test_batch_image, test_batch_label, 1000)
+                log = "%d, %d, %f, %f" % (i, batch_size, ce, ac)
                 output("./log.csv", log)
-                r.prepare(batch_size, data_size, num_class)
+                #
                 r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
             #
         #  
