@@ -1,24 +1,16 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 #
-
 import os
 import sys
 import time
-#from stat import *
 import numpy as np
-#from PIL import Image
 
 #
 # LDNN Modules
 #
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
-import util
-import core
-import train
-import exam
 import plat
-
 if sys.platform.startswith('darwin'):
     import opencl
 else:
@@ -28,7 +20,10 @@ else:
         import dgx
     #
 #
-
+import util
+import core
+import train
+import exam
 import mnist
 
 sys.setrecursionlimit(10000)
@@ -65,35 +60,42 @@ def main():
     argc = len(argvs)
     print(argvs)
     print(argc)
-    if argc==7:
+    if argc==4:
         pass
     else:
         print("error in sh")
         return 0
     #
     
-    type_id = int(argvs[1])
-    platform_id = int(argvs[2])
-    device_id = int(argvs[3])
-    config = int(argvs[4])
-    mode = int(argvs[5])
-    batch_size = int(argvs[6])
+    #type_id = int(argvs[1])
+    #platform_id = int(argvs[2])
+    #device_id = int(argvs[3])
+    config = int(argvs[1])
+    mode = int(argvs[2])
+    batch_size = int(argvs[3])
     batch_offset = 0
     
-    print("type_id=%d" % (type_id))
-    print("platform_id=%d" % (platform_id))
-    print("device_id=%d" % (device_id))
+    #print("type_id=%d" % (type_id))
+    #print("platform_id=%d" % (platform_id))
+    #print("device_id=%d" % (device_id))
     print("config=%d" % (config))
     print("mode=%d" % (mode))
     print("batch_size=%d" % (batch_size))
     
-    if type_id==0:
+    if plat.ID==0: # MBP
+        platform_id = 0
+        device_id = 1
         my_gpu = opencl.OpenCL(platform_id, device_id)
         my_gpu.set_kernel_code()
-    elif type_id==1:
+    elif  plat.ID==1: # tr
+        platform_id = 1
+        device_id = 0
+        my_gpu = opencl.OpenCL(platform_id, device_id)
+        my_gpu.set_kernel_code()
+    elif plat.ID==2: # nvidia
         my_gpu = dgx.Dgx(1)
     else:
-        print("error : undefined type =%d" % (type_id))
+        print("error : undefined platform")
         return 0
     #
     
@@ -137,25 +139,14 @@ def main():
     test_batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
         
     t = train.Train(r)
+    r.prepare(batch_size, data_size, num_class)
+    r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
+    
     if config==0: # all
         w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         
         for i in range(100): # 10
-            #if i==0:
-                #ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
-                #r.prepare(batch_size, data_size, num_class)
-                #r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
-                #ce = r.evaluate()
-                
-                #log = "%d, %d, %f, %f" % (0, batch_size, ce, ac)
-                #output("./log.csv", log)
-            #else:
-            #r.prepare(batch_size, data_size, num_class)
-            #r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
-            #
-            ce = t.loop_sa5(w_list, "all")
-            #ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
-            #
+            ce = t.loop_sa5(i, w_list, "all")
             log = "%d, %f" % (i+1, ce)
             output("./log.csv", log)
             spath = "./wi/wi-fc-%04d.csv" % (i+1)

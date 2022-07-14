@@ -57,11 +57,7 @@ def main():
     else:
         return 0
     #
-    #elif config_id==1:
-    #    r = mnist.setup_dnn(my_gpu, config_id, "./wi-cnn.csv")
-    #elif config_id==2:
-    #    r = mnist.setup_dnn(my_gpu, config_id, "./wi-cnn-2.csv")
-    #
+    
     r.prepare(batch_size, data_size, num_class)
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
@@ -70,9 +66,6 @@ def main():
     
     if config_id==0:
         if rank==0:
-            #test_batch_size = mnist.TEST_BATCH_SIZE
-            #test_batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
-            #test_batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
             w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
             w_list = []
@@ -82,12 +75,8 @@ def main():
         for i in range(100):
             ce = wk.loop_sa5(i, w_list, "all")
             if rank==0:
-                #ac = exam.classification(r, data_size, num_class, test_batch_size, test_batch_image, test_batch_label, 1000)
                 log = "%d, %f" % (i+1, , ce)
                 output("./log.csv", log)
-                
-                #
-                #r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
                 spath = "./wi/wi-fc-%04d.csv" % (i+1)
                 r.save_as(self, spath)
             #
