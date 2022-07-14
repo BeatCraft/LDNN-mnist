@@ -140,24 +140,26 @@ def main():
     if config==0: # all
         w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         
-        for i in range(10):
-            if i==0:
-                ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
-                r.prepare(batch_size, data_size, num_class)
-                r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
-                ce = r.evaluate()
+        for i in range(100): # 10
+            #if i==0:
+                #ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
+                #r.prepare(batch_size, data_size, num_class)
+                #r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
+                #ce = r.evaluate()
                 
-                log = "%d, %d, %f, %f" % (0, batch_size, ce, ac)
-                output("./log.csv", log)
-            else:
-                r.prepare(batch_size, data_size, num_class)
-                r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
+                #log = "%d, %d, %f, %f" % (0, batch_size, ce, ac)
+                #output("./log.csv", log)
+            #else:
+            #r.prepare(batch_size, data_size, num_class)
+            #r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
             #
             ce = t.loop_sa5(w_list, "all")
-            ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
+            #ac = exam.classification(r, data_size, num_class, batch_size, test_batch_image, test_batch_label, 1000)
             #
-            log = "%d, %d, %f, %f" % (i+1, batch_size, ce, ac)
+            log = "%d, %f" % (i+1, ce)
             output("./log.csv", log)
+            spath = "./wi/wi-fc-%04d.csv" % (i+1)
+            r.save_as(spath)
         #
     elif config==2: # separate
         fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
