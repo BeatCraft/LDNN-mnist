@@ -6,6 +6,7 @@
 config=0        # 0:FC, 1:CNN
 mode=1          # 0:train, 1:test
 size=1000       # not used in test
+idx=0
 
 #python3 ./main.py $type_id $platform_id $device_id $config $mode $size
-python3 ./main.py $config $mode $size
+python3 ./main.py $config $mode $size $idx

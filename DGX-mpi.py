@@ -38,9 +38,9 @@ def main():
     size = com.Get_size()
     print("(%d, %d)" % (rank, size))
 
-    config_id = 0 # FC
-    #config_id = 1 # CNN all
-    #config_id = 2 # CNN separate
+    config = 0 # FC
+    #config = 1 # CNN all
+    #config = 2 # CNN separate
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
@@ -52,8 +52,8 @@ def main():
     cp.cuda.Device(rank).use()
     my_gpu = dgx.Dgx(rank)
     
-    if config_id==0:
-        r = mnist.setup_dnn(my_gpu, config_id, "./wi-fc.csv")
+    if config==0:
+        r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
     else:
         return 0
     #
@@ -64,7 +64,7 @@ def main():
     wk = mpi.worker(com, rank, size, r)
     wk.mode_e = 0 # 0:ce, 1:mse
     
-    if config_id==0:
+    if config==0:
         if rank==0:
             w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
@@ -75,13 +75,14 @@ def main():
         for i in range(100):
             ce = wk.loop_sa5(i, w_list, "all")
             if rank==0:
-                log = "%d, %f" % (i+1, , ce)
+                #log = "%d, %f" % (i+1, , ce)
+                log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
                 output("./log.csv", log)
                 spath = "./wi/wi-fc-%04d.csv" % (i+1)
                 r.save_as(self, spath)
             #
         #  
-    elif config_id==1: # CNN all
+    elif config==1: # CNN all
         if rank==0:
             w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:
@@ -92,7 +93,7 @@ def main():
         for idx in range(100):
             wk.loop_sa(w_list, "all", idx, 1, 50)
         #
-    elif config_id==2: # CNN separate
+    elif config==2: # CNN separate
         if rank==0:
             fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
         else:

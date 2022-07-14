@@ -1,6 +1,8 @@
 #!/bin/sh
 
 config=0        # 0:FC, 1:CNN
-size=65250       # mini batch size
+mode=2          # 0:train, 1:test, 2:ec, 3:ac
+size=6250       # not used in test
+idx=0
 
-python3 ./ce.py  $config $size
+python3 ./main.py $config $mode $size $idx

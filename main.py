@@ -60,24 +60,21 @@ def main():
     argc = len(argvs)
     print(argvs)
     print(argc)
-    if argc==4:
+    if argc==5:
         pass
     else:
         print("error in sh")
         return 0
     #
     
-    #type_id = int(argvs[1])
-    #platform_id = int(argvs[2])
-    #device_id = int(argvs[3])
     config = int(argvs[1])
     mode = int(argvs[2])
     batch_size = int(argvs[3])
+    idx = int(argvs[4])
     batch_offset = 0
+    data_size = mnist.IMAGE_SIZE
+    num_class = mnist.NUM_CLASS
     
-    #print("type_id=%d" % (type_id))
-    #print("platform_id=%d" % (platform_id))
-    #print("device_id=%d" % (device_id))
     print("config=%d" % (config))
     print("mode=%d" % (mode))
     print("batch_size=%d" % (batch_size))
@@ -100,7 +97,12 @@ def main():
     #
     
     if config==0:
-        r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
+        if mode==3: # ac
+            path = "./wi/wi-fc-%04d.csv" % (idx)
+            r = mnist.setup_dnn(my_gpu, config, path)
+        else:
+            r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
+        #
     elif config==1:
         r = mnist.setup_dnn(my_gpu, config, "./wi-cnn.csv")
     elif config==2:
@@ -114,14 +116,31 @@ def main():
     
     if mode==0: # train
         pass
-    elif mode==1: # test
+    elif mode==1 or mode==3: # test
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
         batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
-        data_size = mnist.IMAGE_SIZE
-        num_class = mnist.NUM_CLASS
         
-        exam.classification(r, data_size, num_class, batch_size, batch_image, batch_label, 1000)
+        ac = exam.classification(r, data_size, num_class, batch_size, batch_image, batch_label, 1000)
+        print(ac)
+        return 0
+    elif mode==2: # ec to train data : execute this onece before training
+        r.prepare(batch_size, data_size, num_class)
+        train_batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
+        train_batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
+        ce = 0.0
+        n = int(mnist.TRAIN_BATCH_SIZE / batch_size)
+        for i in range(n):
+            r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, batch_offset)
+            ce += r.evaluate()
+            batch_offset += batch_size
+        #
+        ce = ce / float(n)
+        #log = "%d, %f" % (0, ce)
+        log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
+        output("./log.csv", log)
+        r.save_as("./wi/wi-fc-0000.csv")
+        print(ce)
         return 0
     else:
         print("error : undefined mode = %d" % (mode))
@@ -129,14 +148,13 @@ def main():
     #
     
     print("batch_offset=%d" % (batch_offset))
-    data_size = mnist.IMAGE_SIZE
-    num_class = mnist.NUM_CLASS
+
     train_batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
     train_batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
         
-    test_batch_size = mnist.TEST_BATCH_SIZE
-    test_batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
-    test_batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
+    #test_batch_size = mnist.TEST_BATCH_SIZE
+    #test_batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
+    #test_batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
         
     t = train.Train(r)
     r.prepare(batch_size, data_size, num_class)
