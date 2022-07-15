@@ -6,19 +6,29 @@ import sys
 import time
 import math
 #
-from mpi4py import MPI
-import cupy as cp
-import cupyx
+#from mpi4py import MPI
+#import cupy as cp
+#import cupyx
 
 #
 # LDNN Modules
 #
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
+import plat
+if sys.platform.startswith('darwin'):
+    import opencl
+else:
+    if plat.ID==1:
+        import opencl
+    elif plat.ID==2:
+        import dgx
+    #
+#
 import util
 import core
-import dgx
+#import dgx
 import train
-import mpi
+import work
 import exam
 import mnist
 
@@ -49,9 +59,21 @@ def main():
     batch_offset = mnist.MINI_BATCH_START[rank]
     batch_size = mnist.MINI_BATCH_SIZE[rank]
     
-    cp.cuda.Device(rank).use()
-    my_gpu = dgx.Dgx(rank)
-    
+    if plat.ID==0: # MBP
+        return 0
+    elif  plat.ID==1: # tr
+        platform_id = 1
+        device_id = 0
+        my_gpu = opencl.OpenCL(platform_id, device_id)
+        my_gpu.set_kernel_code()
+    elif plat.ID==2: # nvidia
+        cp.cuda.Device(rank).use()
+        my_gpu = dgx.Dgx(rank)
+    else:
+        print("error : undefined platform")
+        return 0
+    #
+        
     if config==0:
         r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
     else:
@@ -61,7 +83,7 @@ def main():
     r.prepare(batch_size, data_size, num_class)
     r.set_batch(data_size, num_class, train_data_batch, train_label_batch, batch_size, batch_offset)
     
-    wk = mpi.worker(com, rank, size, r)
+    wk = work.worker(com, rank, size, r)
     wk.mode_e = 0 # 0:ce, 1:mse
     
     if config==0:
@@ -75,57 +97,15 @@ def main():
         for i in range(100):
             ce = wk.loop_sa5(i, w_list, "all")
             if rank==0:
-                #log = "%d, %f" % (i+1, , ce)
                 log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
                 output("./log.csv", log)
                 spath = "./wi/wi-fc-%04d.csv" % (i+1)
-                r.save_as(self, spath)
+                r.save_as(spath)
             #
         #  
-    elif config==1: # CNN all
-        if rank==0:
-            w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-        else:
-            w_list = []
-        #
-        w_list = com.bcast(w_list, root=0)
-        wk.mode_e = 0 # 0:ce, 1:mse
-        for idx in range(100):
-            wk.loop_sa(w_list, "all", idx, 1, 50)
-        #
-    elif config==2: # CNN separate
-        if rank==0:
-            fc_w_list = wk.train.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-        else:
-            fc_w_list = []
-        #
-        fc_w_list = com.bcast(fc_w_list, root=0)
-
-        if rank==0:
-            cnn_w_list = wk.train.make_w_list([core.LAYER_TYPE_CONV_4])
-        else:
-            cnn_w_list = []
-        #
-        cnn_w_list = com.bcast(cnn_w_list, root=0)
-            
-        for idx in range(50):
-            #wk.mode_w = 1
-            r.propagate()
-            for i in range(1, 5): # FC
-                layer = r.get_layer_at(i)
-                layer.lock = True
-            #
-            wk.loop_k(fc_w_list, "fc", idx, 1, 20)
-
-            #wk.mode_w = 2
-            for i in range(1, 5): #CNN
-                layer = r.get_layer_at(i)
-                layer.lock = False
-            #
-            wk.loop_k(cnn_w_list, "cnn", idx, 1, 10)
-        #
+    else:
+        return 0
     #
-    
     return 0
 #
 #
