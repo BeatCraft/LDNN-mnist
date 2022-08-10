@@ -6,10 +6,7 @@ import sys
 import time
 import math
 #
-#from mpi4py import MPI
-#import cupy as cp
-#import cupyx
-
+from mpi4py import MPI
 #
 # LDNN Modules
 #
@@ -22,11 +19,12 @@ else:
         import opencl
     elif plat.ID==2:
         import dgx
+        import cupy as cp
+        import cupyx
     #
 #
 import util
 import core
-#import dgx
 import train
 import work
 import exam

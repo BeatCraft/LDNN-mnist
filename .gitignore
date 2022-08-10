@@ -1,6 +1,7 @@
 data/
 batch/
-__pycache__/
+__pycache__/*
 *.csv
 work/
-obsolute/
+obsolute/*
+*.zip

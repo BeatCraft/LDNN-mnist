@@ -98,8 +98,12 @@ def main():
     
     if config==0:
         if mode==3: # ac
-            path = "./wi/wi-fc-%04d.csv" % (idx)
+            path = "./wi/60000/256x256-100/wi-fc-%04d.csv" % (idx)
+            #path = "./wi/%d/wi-fc-%04d.csv" % (idx)
+            #path = "./wi/%d/wi-fc-0100.csv" % (idx)
             r = mnist.setup_dnn(my_gpu, config, path)
+            print(path)
+            #return 0
         else:
             r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
         #
@@ -116,12 +120,18 @@ def main():
     
     if mode==0: # train
         pass
-    elif mode==1 or mode==3: # test
+    elif mode==1 or mode==3: # 1:test, 3:ac
         batch_size = mnist.TEST_BATCH_SIZE
         batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
         batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
         
         ac = exam.classification(r, data_size, num_class, batch_size, batch_image, batch_label, 1000)
+        if mode==3:
+            #log = "%d, %s" % (idx, '{:.10g}'.format(ce))
+            msg = "%d, %f" % (idx, ac)
+            output("./ac.csv", msg)
+        #
+        
         print(ac)
         return 0
     elif mode==2: # ec to train data : execute this onece before training
@@ -136,8 +146,7 @@ def main():
             batch_offset += batch_size
         #
         ce = ce / float(n)
-        #log = "%d, %f" % (0, ce)
-        log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
+        log = "%d, %s" % (0, '{:.10g}'.format(ce))
         output("./log.csv", log)
         r.save_as("./wi/wi-fc-0000.csv")
         print(ce)
