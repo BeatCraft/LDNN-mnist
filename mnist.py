@@ -69,7 +69,7 @@ def setup_cnn(r, size):
     
 def setup_fc(r, size):
     print("setup_fc(%d)" % (size))
-    k = 256
+    k = 32
     c = r.count_layers()
     input = core.InputLayer(c, size, size, None, r._gpu)
     r.layers.append(input)
