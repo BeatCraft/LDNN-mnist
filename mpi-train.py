@@ -97,7 +97,8 @@ def main():
             w_list = []
         #
         w_list = com.bcast(w_list, root=0)
-        ce = wk.loop_sa5(0, w_list, "all", 100, 200, 1.50, 1) # 2.00, 1.50, 1.25, 1.10
+        #ce = wk.loop_sa5(0, w_list, "all", 100, 200, 1.50, 1) # 2.00, 1.50, 1.25, 1.10
+        ce = wk.loop_sa_20(0, w_list, 0)
         #for i in range(100):
         #    ce = wk.loop_sa5(i, w_list, "all")
         #    if rank==0:
