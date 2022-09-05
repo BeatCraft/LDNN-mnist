@@ -7,6 +7,9 @@ import time
 import math
 #
 from mpi4py import MPI
+#import cupy as cp
+#import cupyx
+
 #
 # LDNN Modules
 #
@@ -25,6 +28,7 @@ else:
 #
 import util
 import core
+#import dgx
 import train
 import work
 import exam
@@ -40,6 +44,8 @@ def output(path, msg):
 def main():
     argvs = sys.argv
     argc = len(argvs)
+    #
+    start_time = time.time()
     #
     com = MPI.COMM_WORLD
     rank = com.Get_rank()
@@ -91,19 +97,24 @@ def main():
             w_list = []
         #
         w_list = com.bcast(w_list, root=0)
-        
-        for i in range(100):
-            ce = wk.loop_sa5(i, w_list, "all")
-            if rank==0:
-                log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
-                output("./log.csv", log)
-                spath = "./wi/wi-fc-%04d.csv" % (i+1)
-                r.save_as(spath)
-            #
+        ce = wk.loop_sa5(0, w_list, "all", 100, 200, 1.50, 1) # 2.00, 1.50, 1.25, 1.10
+        #for i in range(100):
+        #    ce = wk.loop_sa5(i, w_list, "all")
+        #    if rank==0:
+        #        log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
+        #        output("./log.csv", log)
+        #        spath = "./wi/wi-fc-%04d.csv" % (i+1)
+        #        r.save_as(spath)
+        #    #
         #  
     else:
         return 0
     #
+
+    elapsed_time = time.time() - start_time
+    t = format(elapsed_time, "0")
+    print(("time = %s" % (t)))
+
     return 0
 #
 #

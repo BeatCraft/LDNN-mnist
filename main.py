@@ -171,13 +171,13 @@ def main():
     
     if config==0: # all
         w_list = t.make_w_list([core.LAYER_TYPE_CONV_4, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-        
-        for i in range(100): # 10
-            ce = t.loop_sa5(i, w_list, "all")
-            log = "%d, %f" % (i+1, ce)
-            output("./log.csv", log)
-            spath = "./wi/wi-fc-%04d.csv" % (i+1)
-            r.save_as(spath)
+        ce = t.loop_sa_20(0, w_list, 0)
+        #for i in range(100): # 10
+        #    ce = t.loop_sa5(i, w_list, "all")
+        #    log = "%d, %f" % (i+1, ce)
+        #    output("./log.csv", log)
+        #    spath = "./wi/wi-fc-%04d.csv" % (i+1)
+        #    r.save_as(spath)
         #
     elif config==2: # separate
         fc_w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
