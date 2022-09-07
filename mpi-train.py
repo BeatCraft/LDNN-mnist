@@ -114,7 +114,7 @@ def main():
 
     elapsed_time = time.time() - start_time
     t = format(elapsed_time, "0")
-    print(("time = %s" % (t)))
+    print(("[%d] time = %s" % (rank, t)))
 
     return 0
 #
