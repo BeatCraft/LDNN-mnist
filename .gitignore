@@ -6,3 +6,5 @@ work/
 obsolute/
 *.zip
 ./wi-*
+*.10
+*.zero
