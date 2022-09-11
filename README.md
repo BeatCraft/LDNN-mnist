@@ -41,8 +41,9 @@ Training
 ./train.sh  
   
   
-Changeing platform  
-modiy "../ldnn/plat.py" to change platfoms(=opencl or cupy)   
+Select opencl / cupy  
+modiy "../ldnn/plat.py"  
+
 
 
 
