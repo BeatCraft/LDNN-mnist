@@ -3,11 +3,10 @@
 
 ## Install  
 clone or unzip the archive of this repository  
-  
-cd LDNN-mnist  
-mkdir data  
-mkdir batch  
-mkdir wi  
+    cd LDNN-mnist  
+    mkdir data  
+    mkdir batch  
+    mkdir wi  
   
   
 ## Download the dataset  
