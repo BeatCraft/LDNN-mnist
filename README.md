@@ -30,14 +30,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 this line includes LesserDNN framework:)  
 check if "../ldnn" is correct on your env.  
   
-2.  
+2. create batch files for training and test  
 python3 ./make_batch  
   
-this will create batch files for training and test  
   
-3.  
+3. test  
 ./test.sh  
-  
   
 Training  
 ./train.sh  
