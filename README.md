@@ -1,7 +1,7 @@
 # LDNN-mnist
 
 
-Install  
+## Install  
 clone or unzip the archive of this repository  
   
 cd LDNN-mnist  
@@ -10,7 +10,7 @@ mkdir batch
 mkdir wi  
   
   
-Download the dataset  
+## Download the dataset  
 THE MNIST DATABASE of handwritten digits  
 http://yann.lecun.com/exdb/mnist/  
   
@@ -21,7 +21,7 @@ put these 4 files to batch
 - train-labels-idx1-ubyte  
   
   
-Prepare  
+## Prepare  
 1. check path fot LesserDNN  
 in .py  
   
@@ -37,11 +37,11 @@ python3 ./make_batch
 3. test  
 ./test.sh  
   
-Training  
+## Training  
 ./train.sh  
   
   
-Select opencl / cupy  
+## Select opencl / cupy  
 modiy "../ldnn/plat.py"  
 
 
