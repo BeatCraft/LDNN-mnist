@@ -8,3 +8,4 @@ obsolute/
 ./wi-*
 *.10
 *.zero
+exclude/
