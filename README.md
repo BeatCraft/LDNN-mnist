@@ -17,10 +17,10 @@ http://yann.lecun.com/exdb/mnist/
 
 put these 4 files to batch 
 
-t10k-images-idx3-ubyte
-t10k-labels-idx1-ubyte	
-train-images-idx3-ubyte	
-train-labels-idx1-ubyte
+- t10k-images-idx3-ubyte
+- t10k-labels-idx1-ubyte	
+- train-images-idx3-ubyte	
+- train-labels-idx1-ubyte
 
 
 Prepare
@@ -31,12 +31,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 
 this line includes LesserDNN framework:)
 check if "../ldnn" is correct on your env.
-then,
 
+2.
 python3 ./make_batch
 
 this will create batch files for training and test
 
+3.
 ./test.sh
 
 
