@@ -48,47 +48,48 @@ def setup_cnn(r, size):
     r.layers.append(input)
     
     c = r.count_layers()
-    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 6, input, r._gpu)
+    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 4, input, r._gpu)
     r.layers.append(cnn_1)
                 
     c = r.count_layers()
-    max_1 = core.MaxLayer(c, 6, 28, 28, cnn_1, r._gpu)
+    max_1 = core.MaxLayer(c, 4, 28, 28, cnn_1, r._gpu)
     r.layers.append(max_1)
     
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 14*14*6, 64, max_1, r._gpu)
+    hidden_1 = core.HiddenLayer(c, 14*14*4, 256, max_1, r._gpu)
     r.layers.append(hidden_1)
 
     c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, 64, 64, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
     
     c = r.count_layers()
-    output = core.OutputLayer(c, 64, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
     
+    #r.set_scale_input(1)
+        
 def setup_fc(r, size):
     print("setup_fc(%d)" % (size))
-    k = 32
+
     c = r.count_layers()
     input = core.InputLayer(c, size, size, None, r._gpu)
     r.layers.append(input)
-    # 1 : hidden : 28 x 28 x 1 = 784
+    # 1 : hidden
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, size, k, input, r._gpu)
+    hidden_1 = core.HiddenLayer(c, size, 256, input, r._gpu)
     r.layers.append(hidden_1)
-    # 2 : hidden : 64
+    # 2 : hidden
     c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, k, k, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
-    # 3 : hidden : 64
-    #c = r.count_layers()
-    #hidden_3 = core.HiddenLayer(c, 64, 64, hidden_2, r._gpu)
-    #r.layers.append(hidden_3)
     # 3 : output
     c = r.count_layers()
-    output = core.OutputLayer(c, k, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
+    
+    #r.set_scale_input(1)
+    #r.set_scale_input(2)
 
 def setup_dnn(my_gpu, config, path):
     r = core.Roster()
@@ -104,7 +105,6 @@ def setup_dnn(my_gpu, config, path):
         setup_cnn(r, IMAGE_SIZE) # 28*28
         r.set_path(path)
     #
-    
     r.set_scale_input(1)
     r.load()
     r.update_weight()

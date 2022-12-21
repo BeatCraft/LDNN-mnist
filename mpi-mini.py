@@ -15,8 +15,20 @@ from mpi4py import MPI
 #
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import plat
+#if sys.platform.startswith('darwin'):
+#    import opencl
+#else:
+#    if plat.ID==1:
+#        import opencl
+#    elif plat.ID==2:
+#        import dgx
+#        import cupy as cp
+#        import cupyx
+#    #
+#
 import util
 import core
+#import dgx
 import train
 import work
 import exam
@@ -40,18 +52,20 @@ def main():
     size = com.Get_size()
     print("(%d, %d)" % (rank, size))
 
-    #config = 0 # FC
-    config = 1 # CNN all
+    config = 0 # FC
+    #config = 1 # CNN all
+    #config = 2 # CNN separate
     #
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     train_image_batch = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
     train_label_batch = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
-    batch_offset = mnist.MINI_BATCH_START[rank]
-    batch_size = mnist.MINI_BATCH_SIZE[rank]
+    batch_offset = 0 #mnist.MINI_BATCH_START[rank]
+    batch_size = 60000 #mnist.MINI_BATCH_SIZE[rank]
+    mini_batch_size = 120
+    node_size = 15
     
     my_gpu = plat.getGpu(rank)
-    r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
     if config==0:
         r = mnist.setup_dnn(my_gpu, config, "./wi-fc.csv")
     elif config==1:
@@ -59,38 +73,22 @@ def main():
     else:
         return 0
     #
-    
-    r.prepare(batch_size, data_size, num_class)
+    r.prepare(node_size, data_size, num_class)
     tr = train.Train(r, com, rank, size)
-    r.set_batch(data_size, num_class, train_image_batch, train_label_batch, batch_size, batch_offset)
     
     if rank==0:
-        w_list = tr.make_w_list([core.LAYER_TYPE_CONV, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+        w_list = tr.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
     else:
         w_list = []
     #
     w_list = com.bcast(w_list, root=0)
-            
-    if config==0:
-        #ce = wk.loop_sa5(0, w_list, "all", 100, 200, 1.50, 1) # 2.00, 1.50, 1.25, 1.10
-        ce = tr.loop_sa_20(0, w_list, 0)
-        #for i in range(100):
-        #    ce = wk.loop_sa5(i, w_list, "all")
-        #    if rank==0:
-        #        log = "%d, %s" % (i+1, '{:.10g}'.format(ce))
-        #        output("./log.csv", log)
-        #        spath = "./wi/wi-fc-%04d.csv" % (i+1)
-        #        r.save_as(spath)
-        #    #
-    elif config==1:
-        idx = 0
-        temperature = 200
-        total = 10000
-        debug = 0
-        asw = 1
-        tr.loop_sa(idx, w_list, "all", temperature, total, debug, asw)
-    else:
-        return 0
+
+    n = int(batch_size/mini_batch_size)
+    for i in range(n):
+        offset = i*mini_batch_size + node_size*rank
+        r.set_batch(data_size, num_class, train_image_batch, train_label_batch, node_size, offset)
+        #
+        tr.loop_sa(i, w_list, "fc")
     #
 
     elapsed_time = time.time() - start_time
