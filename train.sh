@@ -1,6 +1,6 @@
 #!/bin/sh
 
-config=1       # 0:FC, 1:CNN
+config=0       # 0:FC, 1:CNN
 size=100       # not used in test
 idx=0
 

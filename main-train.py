@@ -70,7 +70,8 @@ def main():
     r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
 
     w_list = t.make_w_list([core.LAYER_TYPE_CONV, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
-    
+    t.w_list = w_list
+        
     if config==0: # all
         #for i in range(1):
         #    t.logathic_loop(i, w_list, "all")
@@ -78,7 +79,9 @@ def main():
         temperature = 100.0
         total = 10000
         debug = 0
-        t.loop_sa(idx, w_list, "all", temperature, total, debug)
+        asw = 1
+        #t.loop_sa(idx, w_list, "all", temperature, total, debug)
+        t.main_loop_logathic(idx, "all", )
     elif config==1:
         temperature = 100.0
         total = 10000
