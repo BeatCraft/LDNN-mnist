@@ -1,7 +1,7 @@
 #!/bin/sh
 
-config=2    # 0:FC, 1:CNN, 2:FCNN
+config=0    # 0:FC, 1:CNN, 2:FCNN
 log=0
 idx=0
 
-python3 ./main-test.py $config $idx $log
+python3.11 ./main-test.py $config $idx $log

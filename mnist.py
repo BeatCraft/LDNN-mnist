@@ -59,15 +59,13 @@ def setup_cnn(r, size):
     hidden_1 = core.HiddenLayer(c, 14*14*4, 256, max_1, r._gpu)
     r.layers.append(hidden_1)
 
-    c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
-    r.layers.append(hidden_2)
+    #c = r.count_layers()
+    #hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
+    #r.layers.append(hidden_2)
     
     c = r.count_layers()
-    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 256, 10, hidden_1, r._gpu)
     r.layers.append(output)
-    
-    #r.set_scale_input(1)
         
 def setup_fc(r, size):
     print("setup_fc(%d)" % (size))
@@ -87,8 +85,6 @@ def setup_fc(r, size):
     c = r.count_layers()
     output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
-    #r.set_scale_input(1)
-    #r.set_scale_input(2)
 
 def setup_fcnn(r, size):
     print("setup_cnn(%d)" % (size))

@@ -9,3 +9,4 @@ obsolute/
 *.10
 *.zero
 exclude/
+*.pickle
