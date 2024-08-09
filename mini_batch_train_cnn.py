@@ -84,6 +84,8 @@ def main():
     r.direct_set_label(label_array)
     
     ce = r.evaluate()
+    print(ce)
+    #return 0
     
     t = train.Train(r)
     t.w_list = t.make_w_list()

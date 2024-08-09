@@ -1,6 +1,7 @@
 #!/bin/sh
 
-#for i in `seq 0 499`
+start_time=`date +%s`
+
 for j in `seq 0 10`
 do
 
@@ -11,3 +12,7 @@ do
 done
 
 done
+
+end_time=`date +%s`
+elapsed_time=$((end_time - start_time))
+echo $elapsed_time

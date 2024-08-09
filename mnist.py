@@ -73,17 +73,23 @@ def setup_fc(r, size):
     c = r.count_layers()
     input = core.InputLayer(c, size, size, None, r._gpu)
     r.layers.append(input)
-    # 1 : hidden
+    # hidden
     c = r.count_layers()
     hidden_1 = core.HiddenLayer(c, size, 256, input, r._gpu)
     r.layers.append(hidden_1)
-    # 2 : hidden
+    # hidden
     c = r.count_layers()
     hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
-    # 3 : output
+    
+    # hidden
     c = r.count_layers()
-    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
+    hidden_3 = core.HiddenLayer(c, 256, 128, hidden_2, r._gpu)
+    r.layers.append(hidden_3)
+    
+    # output
+    c = r.count_layers()
+    output = core.OutputLayer(c, 128, 10, hidden_3, r._gpu)
     r.layers.append(output)
 
 def setup_fcnn(r, size):
