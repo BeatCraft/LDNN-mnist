@@ -31,15 +31,6 @@ TEST_BATCH_SIZE = 10000
 TEST_IMAGE_BATCH_PATH = BATCH_BASE_PATH + "test_image_batch.pickle"
 TEST_LABEL_BATCH_PATH = BATCH_BASE_PATH + "test_label_batch.pickle"
 
-# fpr MPI
-#MINI_BATCH_SIZE = [7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500]
-#MINI_BATCH_START = [0, 7500, 15000, 22500, 30000, 37500, 45000, 52500]
-#MINI_BATCH_SIZE = [6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250, 6250]
-#MINI_BATCH_START = [0, 6250, 12500, 18750, 25000, 31250, 37500, 43750]
-MBSIZE = 7500 # 1000, 2500, 6250, 7500
-MINI_BATCH_SIZE = [MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE, MBSIZE]
-MINI_BATCH_START = [MBSIZE*0, MBSIZE*1, MBSIZE*2, MBSIZE*3, MBSIZE*4, MBSIZE*5, MBSIZE*6, MBSIZE*7]
-
 def setup_cnn(r, size):
     print("setup_cnn(%d)" % (size))
     
@@ -136,25 +127,29 @@ def setup_fcnn(r, size):
               0, e, 0,
               e, 0, 0 ]
     fcnn_1.set_filter(index, farray, 9)
+
+def setup_dnn(my_gpu, config):
+    if config==0:
+        wpath = "./wi-fc.csv"
+    elif config==1:
+        wpath = "./wi-cnn.csv"
+    else:
+        return None
+    #
     
-def setup_dnn(my_gpu, config, path):
     r = core.Roster()
     r.set_gpu(my_gpu)
-        
     if config==0: # fc
         setup_fc(r, IMAGE_SIZE) # 28*28
-        r.set_path(path)
     elif config==1: # cnn
-        setup_cnn(r, IMAGE_SIZE) # 28*28
-        r.set_path(path)
-    elif config==2: # cnn
-        setup_fcnn(r, IMAGE_SIZE) # 28*28
-        r.set_path(path)
+        setup_cnn(r, IMAGE_SIZE)
+    elif config==2: # fcnn
+        setup_fcnn(r, IMAGE_SIZE)
     #
+    r.set_path(wpath)
+    
     r.set_scale_input(1)
     r.load()
     r.update_weight()
     return r
     
-
-

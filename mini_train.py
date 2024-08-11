@@ -31,7 +31,15 @@ def main():
         print("error : need batch offset index")
         return 0
     #
-    #loop = int(argvs[1])
+    config = int(argvs[1])
+    #if config==0:
+    #    wpath = "./wi-fc.csv"
+    #elif config==1:
+    #    wpath = "./wi-cnn.csv"
+    #else:
+    #    return 0
+    #
+
     iteration = 100
     type = 0 # classificattion
     scale = True
@@ -42,23 +50,36 @@ def main():
     mini_batch_num = int(batch_size / mini_batch_size)
     print(batch_size, mini_batch_size, mini_batch_num)
     
+    #
+    # batch
+    #
     b = batch.Batch(data_size, type, num_class)
     b.load_data(mnist.TRAIN_IMAGE_BATCH_PATH)
     b.load_label(mnist.TRAIN_LABEL_BATCH_PATH)
     b.prepare_batch(scale)
     b.prepare_mini_batch(mini_batch_size)
     
-    wpath = "./wi-fc.csv"
     my_gpu = plat.getGpu()
-    r = core.Roster()
-    r.set_gpu(my_gpu)
-    mnist.setup_fc(r, mnist.IMAGE_SIZE)
+    r = mnist.setup_dnn(my_gpu, config)
+    if r==None:
+        return 0
+    #
     
-    r.set_path(wpath)
-    r.set_scale_input(1)
-    r.load()
-    r.update_weight()
+    #r = core.Roster()
+    #r.set_gpu(my_gpu)
+    
+    #if config==0:
+    #    mnist.setup_fc(r, data_size)
+    #elif config==1:
+    #    mnist.setup_cnn(r, data_size)
+    #
+    #r.set_path(wpath)
+    #r.set_scale_input(1)
+    #r.load()
+    #r.update_weight()
+    
     r.prepare(batch_size, data_size, num_class)
+    
     t = train.Train(r)
     t.w_list = t.make_w_list()
     
