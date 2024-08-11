@@ -1,7 +1,6 @@
 #!/bin/sh
 
-config=0       # 0:FC, 1:CNN
-size=100       # not used in test
-idx=0
+config=0 # 0:FC, 1:CNN
+size=1000 # size of batch 
 
-python3 ./main-train.py $config $size $idx
+python3.11 ./main_train.py $config $size
