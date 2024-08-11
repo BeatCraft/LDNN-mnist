@@ -13,12 +13,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import plat
 import core
 import train
-
-import mnist
+import batch
 
 # tool
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ptool/'))
 import tool
+
+import mnist
 
 BATCH_DATA_ARRAY = tool.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
 BATCH_LABEL_LSIT = tool.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
