@@ -43,8 +43,6 @@ def main():
         return 0
     #
     
-    #train_batch_image = util.pickle_load(mnist.TRAIN_IMAGE_BATCH_PATH)
-    #train_batch_label = util.pickle_load(mnist.TRAIN_LABEL_BATCH_PATH)
     #
     # batch
     #
@@ -53,22 +51,21 @@ def main():
     b.load_label(mnist.TRAIN_LABEL_BATCH_PATH)
     b.prepare_batch(scale)
     data_array, label_array = b.get_batch(batch_size)
-        
+    
+    #
+    # train
+    #
     t = train.Train(r)
     r.prepare(batch_size, data_size, num_class)
     r.direct_set_data(data_array)
     r.direct_set_label(label_array)
-        
-    #r.set_batch(data_size, num_class, train_batch_image, train_batch_label, batch_size, 0)
 
     w_list = t.make_w_list([core.LAYER_TYPE_CONV, core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
     t.w_list = w_list
     
     ce = r.evaluate()
-    t.main_simple_loop(0, ce, iteration, 4)
+    t.main_simple_loop(0, 0, ce, iteration, 4)
     return 0
-        
-  
 #
 #
 #

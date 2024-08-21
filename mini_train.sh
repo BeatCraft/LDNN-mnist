@@ -1,6 +1,7 @@
 #!/bin/sh
 
-config=0       # 0:FC, 1:CNN
+config=0 # 0:FC, 1:CNN
+size=100 # size of mini batch
 
 start_time=`date +%s`
 
@@ -9,7 +10,7 @@ do
     echo "________"
     echo $i
     echo "________"
-    python3.11 ./mini_train.py $config
+    python3.11 ./mini_train.py $config $size $i
 
     end_time=`date +%s`
     elapsed_time=$((end_time - start_time))

@@ -143,8 +143,6 @@ def setup_dnn(my_gpu, config):
         setup_fc(r, IMAGE_SIZE) # 28*28
     elif config==1: # cnn
         setup_cnn(r, IMAGE_SIZE)
-    elif config==2: # fcnn
-        setup_fcnn(r, IMAGE_SIZE)
     #
     r.set_path(wpath)
     

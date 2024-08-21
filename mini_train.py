@@ -6,8 +6,8 @@ import sys
 import time
 import pickle
 import numpy as np
-import csv
-import random
+#import csv
+#import random
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import plat
@@ -27,18 +27,13 @@ def main():
     print(argvs)
     print(argc)
 
-    if argc!=2:
+    if argc!=4:
         print("error : need batch offset index")
         return 0
     #
     config = int(argvs[1])
-    #if config==0:
-    #    wpath = "./wi-fc.csv"
-    #elif config==1:
-    #    wpath = "./wi-cnn.csv"
-    #else:
-    #    return 0
-    #
+    mini_batch_size = int(argvs[2])
+    loop = int(argvs[3])
 
     iteration = 100
     type = 0 # classificattion
@@ -46,9 +41,8 @@ def main():
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_size = mnist.TRAIN_BATCH_SIZE
-    mini_batch_size = 100
     mini_batch_num = int(batch_size / mini_batch_size)
-    print(batch_size, mini_batch_size, mini_batch_num)
+    print("size:", batch_size, mini_batch_size, mini_batch_num)
     
     #
     # batch
@@ -64,27 +58,13 @@ def main():
     if r==None:
         return 0
     #
-    
-    #r = core.Roster()
-    #r.set_gpu(my_gpu)
-    
-    #if config==0:
-    #    mnist.setup_fc(r, data_size)
-    #elif config==1:
-    #    mnist.setup_cnn(r, data_size)
-    #
-    #r.set_path(wpath)
-    #r.set_scale_input(1)
-    #r.load()
-    #r.update_weight()
-    
-    r.prepare(batch_size, data_size, num_class)
+    r.prepare(mini_batch_size, data_size, num_class)
     
     t = train.Train(r)
     t.w_list = t.make_w_list()
-    
+        
     #
-    # random mini-batch
+    # mini-batch
     #
     for n in range(mini_batch_num):
         data_array, label_array = b.get_mini_batch(n)
@@ -92,7 +72,7 @@ def main():
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
         ce = r.evaluate()
-        t.main_simple_loop(n, ce, iteration, 4)
+        t.main_simple_loop(loop, n, ce, iteration, 4)
     #
     return 0
 
