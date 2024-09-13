@@ -22,7 +22,7 @@ def main():
     argc = len(argvs)
     print(argvs)
     print(argc)
-    if argc==3:
+    if argc==5:
         pass
     else:
         print("error in sh")
@@ -30,10 +30,13 @@ def main():
     #
     config = int(argvs[1])
     batch_size = int(argvs[2])
+    iteration = int(argvs[3])
+    num_attack = int(argvs[4])
+        
     batch_offset = 0
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
-    iteration = 100
+    
     scale = True
     print("config=%d" % (config))
 
@@ -64,7 +67,7 @@ def main():
     t.w_list = w_list
     
     ce = r.evaluate()
-    t.main_simple_loop(0, 0, ce, iteration, 4)
+    t.main_simple_loop(0, 0, ce, iteration, num_attack)
     return 0
 #
 #

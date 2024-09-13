@@ -73,14 +73,9 @@ def setup_fc(r, size):
     hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
     
-    # hidden
-    c = r.count_layers()
-    hidden_3 = core.HiddenLayer(c, 256, 128, hidden_2, r._gpu)
-    r.layers.append(hidden_3)
-    
     # output
     c = r.count_layers()
-    output = core.OutputLayer(c, 128, 10, hidden_3, r._gpu)
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
 
 def setup_fcnn(r, size):
@@ -146,6 +141,8 @@ def setup_dnn(my_gpu, config):
     #
     r.set_path(wpath)
     
+    #r.wi_mode = 4
+                
     r.set_scale_input(1)
     r.load()
     r.update_weight()
