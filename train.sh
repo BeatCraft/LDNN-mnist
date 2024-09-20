@@ -2,7 +2,7 @@
 
 config=0 # 0:FC, 1:CNN
 size=1000 # size of batch 
-iteration=1000
+iteration=100000
 num_attack=4
 
 start_time=`date +%s`

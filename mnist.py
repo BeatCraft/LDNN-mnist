@@ -141,7 +141,8 @@ def setup_dnn(my_gpu, config):
     #
     r.set_path(wpath)
     
-    #r.wi_mode = 4
+    #r.wi_mode = 0
+    r.wi_mode = 5
                 
     r.set_scale_input(1)
     r.load()
