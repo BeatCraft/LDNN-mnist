@@ -68,16 +68,19 @@ def main():
     #
     wi_path = argvs[1]
     wv_list = import_weight_index(wi_path)
-    print(wv_list)
+    #print(wv_list)
     
     num_wi = len(WEIGHT_SET)
     hist_list = [0]*num_wi
-    print(hist_list)
+    print(hist_list, len(wv_list))
         
     for wi in wv_list:
         hist_list[wi] = hist_list[wi] + 1
     #
     print(hist_list)
+    for h in hist_list:
+        print(h/len(wv_list))
+    #
         
     plt.figure(figsize=(4,2))
     #plt.plot(WEIGHT_SET, hist_list)

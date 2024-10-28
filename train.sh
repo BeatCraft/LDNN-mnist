@@ -7,7 +7,7 @@ num_attack=4
 
 start_time=`date +%s`
 
-python3.11 ./main_train.py $config $size $iteration $num_attack
+python3 ./main_train.py $config $size $iteration $num_attack
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

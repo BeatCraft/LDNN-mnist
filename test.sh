@@ -2,5 +2,5 @@
 
 config=0    # 0:FC, 1:CNN
 
-python3.11 ./main_test.py $config
+python3 ./main_test.py $config
 
