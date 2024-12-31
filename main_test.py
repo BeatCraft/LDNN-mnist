@@ -44,7 +44,8 @@ def main():
     
     ac = exam.classification(r, data_size, num_class, batch_size, batch_image, batch_label, 1000)
     print(ac)
-
+    
+    #r.save_as("./w.csv", 1)
     return 0
 #
 #
