@@ -8,7 +8,7 @@ num_attack=4
 
 start_time=`date +%s`
 
-for i in {1..100} ; do
+for i in {1..10000} ; do
     echo ${i}
     python3 ./train_bp.py $config $size $iteration $num_attack
 done

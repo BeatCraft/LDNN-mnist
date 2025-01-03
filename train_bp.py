@@ -71,7 +71,7 @@ def main():
     
     ce = r.evaluate(0)
     #print(ce)
-    for i in range(5):
+    for i in range(1):
         r.backpropagate(ce)
         r.update_weight
         
