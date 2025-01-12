@@ -2,16 +2,18 @@
 
 # 0:FC, 1:CNN, 2: weight value mode
 config=2
-size=4 # size of batch
-iteration=10
+size=1 # size of batch
+iteration=1
 num_attack=4
+bpd=4
+ss=0
 
 start_time=`date +%s`
 
-for i in {1..10000} ; do
-    echo ${i}
-    python3 ./train_bp.py $config $size $iteration $num_attack
-done
+#for i in {1..10000} ; do
+#    echo ${i}
+    python3 ./train_bp.py $config $size $iteration $num_attack $bpd $ss
+#done
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

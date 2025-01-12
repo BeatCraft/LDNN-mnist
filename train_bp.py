@@ -22,7 +22,7 @@ def main():
     argc = len(argvs)
     print(argvs)
     print(argc)
-    if argc==5:
+    if argc==7:
         pass
     else:
         print("error in sh")
@@ -32,6 +32,8 @@ def main():
     batch_size = int(argvs[2])
     iteration = int(argvs[3])
     num_attack = int(argvs[4])
+    bp_debug = int(argvs[5])
+    save_switch = int(argvs[6])
         
     batch_offset = 0
     data_size = mnist.IMAGE_SIZE
@@ -53,10 +55,10 @@ def main():
     b.load_data(mnist.TRAIN_IMAGE_BATCH_PATH)
     b.load_label(mnist.TRAIN_LABEL_BATCH_PATH)
     b.prepare_batch(scale)
-    #data_array, label_array = b.get_batch(batch_size)
+    data_array, label_array = b.get_batch(batch_size)
     #print(data_array)
-    b.prepare_mini_batch(batch_size)
-    data_array, label_array = b.get_mini_batch(0)
+    #b.prepare_mini_batch(batch_size)
+    #data_array, label_array = b.get_mini_batch(0)
     
     #
     # train
@@ -70,30 +72,29 @@ def main():
     t.w_list = w_list
     
     ce = r.evaluate(0)
-    #print(ce)
-    for i in range(1):
-        r.backpropagate(ce)
-        r.update_weight
+    print(ce)
+    #return 0
+    
+    for i in range(iteration):
+        r.backpropagate(ce, bp_debug, 0)
+        #r.update_weight()
         
         ce2 = r.evaluate(0)
         print("[%04d]" %(i), ce, ">", ce2)
         ce = ce2
+        if ce<0.000001:
+            break
+        #
     #
-    #t.main_simple_loop(0, 0, ce, iteration, num_attack)
-    
-    
-    r.save_as("./w.csv", 1)
-    
+    if save_switch:
+        r.save_as("./w.csv", 1)
+    #
     return 0
-#
-#
-#
+    
 if __name__=='__main__':
     print(">> start")
     sts = main()
     print(">> end")
     print("\007")
     sys.exit(sts)
-#
-#
-#
+    
