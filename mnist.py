@@ -140,16 +140,17 @@ def setup_dnn(my_gpu, config):
     
     r = core.Roster()
     r.set_gpu(my_gpu)
-    if config==0 or config==2: # fc
+    if config==0: # fc with wi
         setup_fc(r, IMAGE_SIZE) # 28*28
+        #r.wi_mode = 0 # wi with even
+        r.wi_mode = 5 # wi with std
     elif config==1: # cnn
         setup_cnn(r, IMAGE_SIZE)
+        r.wi_mode = 5 # wi with std
+    elif config==2: # fc with float value
+        r.wi_mode = 6
     #
     r.set_path(wpath)
-    
-    #r.wi_mode = 0
-    #r.wi_mode = 5
-    r.wi_mode = 6
     r.set_scale_input(1)
     if config==2:
         r.load("./w.csv", 1)

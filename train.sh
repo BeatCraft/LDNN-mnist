@@ -2,8 +2,8 @@
 
 # 0:FC, 1:CNN, 2: weight value mode
 config=0
-size=1000 # size of batch 
-iteration=100000
+size=12500 # size of batch 
+iteration=1000
 num_attack=4
 
 start_time=`date +%s`

@@ -22,7 +22,7 @@ def main():
     argc = len(argvs)
     print(argvs)
     print(argc)
-    if argc==7:
+    if argc==8:
         pass
     else:
         print("error in sh")
@@ -34,6 +34,7 @@ def main():
     num_attack = int(argvs[4])
     bp_debug = int(argvs[5])
     save_switch = int(argvs[6])
+    debug = int(argvs[7])
         
     batch_offset = 0
     data_size = mnist.IMAGE_SIZE
@@ -76,9 +77,9 @@ def main():
     #return 0
     
     for i in range(iteration):
-        r.backpropagate(ce, bp_debug, 0)
+        r.backpropagate(ce, bp_debug, debug)
+        #break
         #r.update_weight()
-        
         ce2 = r.evaluate(0)
         print("[%04d]" %(i), ce, ">", ce2)
         ce = ce2
@@ -86,6 +87,20 @@ def main():
             break
         #
     #
+    #return 0
+    
+    hl = r.get_layer_at(1)
+    print("hidden 1", hl._output_array[0])
+    #print("hidden 1 w", hl._weight_matrix[0])
+        
+    hl = r.get_layer_at(2)
+    print("hidden 2 o", hl._output_array[0])
+    #print("hidden 2 w", hl._weight_matrix[0])
+    
+    hl = r.get_layer_at(3)
+    print("output", hl._output_array[0])
+    print("output, softmax", hl._softmax_array)
+    
     if save_switch:
         r.save_as("./w.csv", 1)
     #

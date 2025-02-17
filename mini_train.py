@@ -38,6 +38,7 @@ def main():
     iteration = 100
     type = 0 # classificattion
     scale = True
+    quantize = 1
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_size = mnist.TRAIN_BATCH_SIZE
@@ -50,7 +51,7 @@ def main():
     b = batch.Batch(data_size, type, num_class)
     b.load_data(mnist.TRAIN_IMAGE_BATCH_PATH)
     b.load_label(mnist.TRAIN_LABEL_BATCH_PATH)
-    b.prepare_batch(scale)
+    b.prepare_batch(scale, quantize)
     b.prepare_mini_batch(mini_batch_size)
     
     my_gpu = plat.getGpu()

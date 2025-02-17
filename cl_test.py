@@ -13,6 +13,9 @@ for platform in platforms:
         print(f"\tDevice Type: {cl.device_type.to_string(device.type)}")
         print(f"\tDevice Vendor: {device.vendor}")
         print(f"\tDevice Version: {device.version}\n")
+        
+        print(f"  Global Memory Size: {device.global_mem_size / (1024**3):.2f} GB")
+        print(f"  Max Memory Allocation Size: {device.max_mem_alloc_size / (1024**3):.2f} GB")
     #
 #
 

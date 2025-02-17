@@ -1,11 +1,11 @@
 #!/bin/sh
 
 config=0 # 0:FC, 1:CNN
-size=1000 # size of mini batch
+size=10000 # size of mini batch
 
 start_time=`date +%s`
 
-for i in `seq 0 10`
+for i in `seq 0 100`
 do
     echo "________"
     echo $i

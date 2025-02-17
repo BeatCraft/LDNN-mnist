@@ -5,14 +5,15 @@ config=2
 size=1 # size of batch
 iteration=1
 num_attack=4
-bpd=4
+bpd=1
 ss=0
+debug=0
 
 start_time=`date +%s`
 
 #for i in {1..10000} ; do
 #    echo ${i}
-    python3 ./train_bp.py $config $size $iteration $num_attack $bpd $ss
+    python3 ./train_bp.py $config $size $iteration $num_attack $bpd $ss $debug
 #done
 
 end_time=`date +%s`
