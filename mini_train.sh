@@ -1,7 +1,7 @@
 #!/bin/sh
 
 config=0 # 0:FC, 1:CNN
-size=10000 # size of mini batch
+size=1000 # size of mini batch
 
 start_time=`date +%s`
 

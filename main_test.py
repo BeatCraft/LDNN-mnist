@@ -14,6 +14,7 @@ import plat
 import core
 import exam
 import util
+import batch
 
 import mnist
 
@@ -33,16 +34,26 @@ def main():
     batch_size = mnist.TEST_BATCH_SIZE # 10000
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
-    batch_image = util.pickle_load(mnist.TEST_IMAGE_BATCH_PATH)
-    batch_label = util.pickle_load(mnist.TEST_LABEL_BATCH_PATH)
+    scale = True
+    mini_batch_size = 1000
     
     my_gpu = plat.getGpu()
-    r = mnist.setup_dnn(my_gpu, config)
+    r = mnist.setup_dnn(my_gpu, config, mini_batch_size)
     if r==None:
         return 0
     #
     
-    ac = exam.classification(r, data_size, num_class, batch_size, batch_image, batch_label, 1000)
+    b = batch.Batch(data_size, type, num_class)
+    b.quantize = True
+    #b.quantize = False
+    b.load_data(mnist.TEST_IMAGE_BATCH_PATH)
+    b.load_label(mnist.TEST_LABEL_BATCH_PATH)
+    b.prepare_batch(scale)
+    b.prepare_mini_batch(mini_batch_size)
+    
+    debug = 0
+    single = 0
+    ac = exam.classification(r, b, 1000, debug, single)
     print(ac)
     
     #r.save_as("./w.csv", 1)

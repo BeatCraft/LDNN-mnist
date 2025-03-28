@@ -68,13 +68,11 @@ def setup_fc(r, size):
     # hidden
     c = r.count_layers()
     hidden_1 = core.HiddenLayer(c, size, 256, input, r._gpu)
-    #hidden_1.set_scale(0)
     r.layers.append(hidden_1)
         
     # hidden
     c = r.count_layers()
     hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
-    #hidden_2.set_scale(0)
     r.layers.append(hidden_2)
     
     # output
@@ -127,7 +125,7 @@ def setup_fcnn(r, size):
               e, 0, 0 ]
     fcnn_1.set_filter(index, farray, 9)
 
-def setup_dnn(my_gpu, config):
+def setup_dnn(my_gpu, config, batch_size=0):
     if config==0:
         wpath = "./wi-fc.csv"
     elif config==1:
@@ -150,13 +148,20 @@ def setup_dnn(my_gpu, config):
     elif config==2: # fc with float value
         r.wi_mode = 6
     #
+    
+    r._batch_size = batch_size
     r.set_path(wpath)
     r.set_scale_input(1)
-    if config==2:
-        r.load("./w.csv", 1)
-    else:
-        r.load()
+    #r.set_mode_q(0)
+    r.set_mode_q(1)
+    r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)
+    
+    #if config==2:
+    #    r.load("./w.csv", 1)
+    #else:
+    #    r.load()
     #
+    r.load()
     r.update_weight()
     return r
     

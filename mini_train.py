@@ -6,8 +6,6 @@ import sys
 import time
 import pickle
 import numpy as np
-#import csv
-#import random
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import plat
@@ -38,7 +36,7 @@ def main():
     iteration = 100
     type = 0 # classificattion
     scale = True
-    quantize = 1
+    #quantize = 1
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
     batch_size = mnist.TRAIN_BATCH_SIZE
@@ -49,17 +47,18 @@ def main():
     # batch
     #
     b = batch.Batch(data_size, type, num_class)
+    b.quantize = True
     b.load_data(mnist.TRAIN_IMAGE_BATCH_PATH)
     b.load_label(mnist.TRAIN_LABEL_BATCH_PATH)
-    b.prepare_batch(scale, quantize)
+    b.prepare_batch(scale)
     b.prepare_mini_batch(mini_batch_size)
-    
+    b.shuffle_mini_batch()
     my_gpu = plat.getGpu()
-    r = mnist.setup_dnn(my_gpu, config)
+    r = mnist.setup_dnn(my_gpu, config, mini_batch_size)
     if r==None:
         return 0
     #
-    r.prepare(mini_batch_size, data_size, num_class)
+    #r.prepare(mini_batch_size, data_size, num_class)
     
     t = train.Train(r)
     t.w_list = t.make_w_list()
