@@ -2,13 +2,16 @@
 
 # 0:FC, 1:CNN, 2: weight value mode
 config=0
-size=12500 # size of batch 
+# 0:train, 1:test, 2:mini batch train
+mode=0
 iteration=1000
 num_attack=4
+size=1000 # size of batch
+
 
 start_time=`date +%s`
 
-python3 ./main_train.py $config $size $iteration $num_attack
+python3 ./main.py $config $mode $iteration $num_attack $size
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

@@ -65,19 +65,24 @@ def setup_fc(r, size):
     input = core.InputLayer(c, size, size, None, r._gpu)
     r.layers.append(input)
     
-    # hidden
+    # hidden 1
     c = r.count_layers()
     hidden_1 = core.HiddenLayer(c, size, 256, input, r._gpu)
     r.layers.append(hidden_1)
         
-    # hidden
+    # hidden 2
     c = r.count_layers()
     hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
     
+    # hidden 3
+    c = r.count_layers()
+    hidden_3 = core.HiddenLayer(c, 256, 128, hidden_2, r._gpu)
+    r.layers.append(hidden_3)
+    
     # output
     c = r.count_layers()
-    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
+    output = core.OutputLayer(c, 128, 10, hidden_3, r._gpu)
     r.layers.append(output)
 
 def setup_fcnn(r, size):
@@ -154,6 +159,7 @@ def setup_dnn(my_gpu, config, batch_size=0):
     r.set_scale_input(1)
     #r.set_mode_q(0)
     r.set_mode_q(1)
+    print("batch_size", batch_size)
     r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)
     
     #if config==2:
