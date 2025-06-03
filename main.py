@@ -56,6 +56,25 @@ def main():
         batch_size = int(argvs[5])
         loop = int(argvs[6])
         print("mini batch train")
+    elif mode==3: # train with momoentum
+        if argc!=6:
+            print("error", argc)
+            return 0
+        #
+        iteration = int(argvs[3])
+        num_attack = int(argvs[4])
+        batch_size = int(argvs[5])
+        print("train with momoentum")
+    elif mode==4: # mini batch train with momentum
+        if argc!=7:
+            print("error", argc)
+            return 0
+        #
+        iteration = int(argvs[3])
+        num_attack = int(argvs[4])
+        batch_size = int(argvs[5])
+        loop = int(argvs[6])
+        print("mini batch train")
     else:
         print("mode error")
     #
@@ -66,7 +85,10 @@ def main():
     type = 0 # classification
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
-    quantize = 2
+    # 0 : float, from -1.0 to 1.0
+    # 1 : fixed values of float
+    # 2 : index to float table
+    quantize = 0
     b = batch.Batch(data_size, type, num_class, mode, quantize)
     b.train_data_path = mnist.TRAIN_IMAGE_BATCH_PATH
     b.train_label_path = mnist.TRAIN_LABEL_BATCH_PATH
@@ -77,7 +99,6 @@ def main():
     b.quantize()
     b.label_list_to_one_hot_vector()
     
-    #batch_offset = 0
     #
     # gpu
     #
@@ -89,11 +110,13 @@ def main():
     
     if mode==0: # train
         data_array, label_array = b.get_batch(batch_size, 0)
+        #print(data_array[0])
         t = train.Train(r)
         t.w_list = t.make_w_list()
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
-        ce = r.evaluate()
+
+        ce = r.evaluate(0)
         t.main_simple_loop(0, 0, ce, iteration, num_attack)
     elif mode==1: # test
         debug = 0
@@ -121,6 +144,40 @@ def main():
             #
             b.shuffle_mini_batch()
         #
+    elif mode==3: # train with momentum
+        data_array, label_array = b.get_batch(batch_size, 0)
+        t = train.Train(r)
+        t.w_list = t.make_w_list()
+        r.direct_set_data(data_array)
+        r.direct_set_label(label_array)
+        
+        for idx in range(10000):
+            t.momentum_loop(idx, 0, iteration, num_attack)
+            num_attack2 = 4
+            t.auto_momentum_loop(idx, 0, iteration, num_attack2)
+            r.save()
+        #
+    elif mode==4: # mini batch train with momentum
+        t = train.Train(r)
+        t.w_list = t.make_w_list()
+        b.prepare_mini_batch(batch_size)
+        
+        for l in range(loop):
+            for n in range(b.mini_batch_num):
+                data_array, label_array = b.get_mini_batch(n*batch_size)
+                r.reset()
+                r.direct_set_data(data_array)
+                r.direct_set_label(label_array)
+                
+                t.momentum_loop(l, n, iteration, num_attack)
+                num_attack2 = 4
+                t.auto_momentum_loop(l, n, iteration, num_attack2)
+                r.save()
+            #
+            #b.shuffle_mini_batch()
+        #
+    
+    
     else:
         print("mode error")
     #
