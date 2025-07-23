@@ -53,7 +53,7 @@ def setup_fc(r, size):
     output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
 
-def setup_dnn(my_gpu, config, batch_size=0):
+def setup_dnn(my_gpu, config, mode_q=0, batch_size=0):
     if config==0:
         wpath = "./wi-fc.csv"
     elif config==1:
@@ -68,21 +68,23 @@ def setup_dnn(my_gpu, config, batch_size=0):
     r.set_gpu(my_gpu)
     if config==0: # fc with wi
         setup_fc(r, IMAGE_SIZE) # 28*28
-        #r.wi_mode = 0 # wi with even
-        r.wi_mode = 5 # wi with std
+        # 0:even, 5:std, 7:3bit
+        r.wi_mode = 0
+        #r.wi_mode = 5
+        #r.wi_mode = 7
     elif config==1: # cnn
+        print("error, no cnn")
         return None
-    #    setup_cnn(r, IMAGE_SIZE)
-    #    r.wi_mode = 5 # wi with std
     elif config==2: # fc with float value
         r.wi_mode = 6
+    else:
+        print("error config", config)
     #
     
     r._batch_size = batch_size
     r.set_path(wpath)
     #r.set_scale_input(1)
-    r.set_mode_q(0) # old style
-    #r.set_mode_q(1)
+    r.set_mode_q(mode_q) # 0:old, 1:new
     print("batch_size", batch_size)
     r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)
     

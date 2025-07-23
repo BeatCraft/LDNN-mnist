@@ -7,10 +7,10 @@ config=0 # 0:FC, 1:CNN
 # 3:train with momentum
 # 4:mini batch train with momentum
 mode=4
-iteration=1
+iteration=10
 num_attack=4
-size=1000 # size of mini batch
-num=100 # loop
+size=60000 # size of mini batch
+num=10000 # loop
 
 
 start_time=`date +%s`

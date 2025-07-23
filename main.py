@@ -30,6 +30,11 @@ def main():
     config = int(argvs[1])
     mode = int(argvs[2])
     print("config=%d, mode=%d" % (config, mode))
+    
+    exec_mode = 0 # train:0, test:1
+    batch_quantize_mode = 0 # sacle only:0, fixed float:1, index:2
+    mode_q = 0 # weight only:0, full:1
+    
     if mode==0: # train
         if argc!=6:
             print("error", argc)
@@ -45,6 +50,7 @@ def main():
             return 0
         #
         batch_size = int(argvs[3])
+        exec_mode = 1
         print("test")
     elif mode==2: # mini batch train
         if argc!=7:
@@ -75,6 +81,27 @@ def main():
         batch_size = int(argvs[5])
         loop = int(argvs[6])
         print("mini batch train")
+    elif mode==5: # test for full quantozation
+        if argc!=4:
+            print("error", argc)
+            return 0
+        #
+        batch_size = int(argvs[3])
+        batch_quantize_mode = 2
+        mode_q = 1
+        exec_mode = 1
+        print("test for full quantozation")
+    elif mode==6: # train
+        if argc!=6:
+            print("error", argc)
+            return 0
+        #
+        iteration = int(argvs[3])
+        num_attack = int(argvs[4])
+        batch_size = int(argvs[5])
+        batch_quantize_mode = 2
+        mode_q = 1
+        print("full quantization train")
     else:
         print("mode error")
     #
@@ -85,11 +112,11 @@ def main():
     type = 0 # classification
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
+    # batch_quantize_mode
     # 0 : float, from -1.0 to 1.0
     # 1 : fixed values of float
     # 2 : index to float table
-    quantize = 0
-    b = batch.Batch(data_size, type, num_class, mode, quantize)
+    b = batch.Batch(data_size, type, num_class, exec_mode, batch_quantize_mode)
     b.train_data_path = mnist.TRAIN_IMAGE_BATCH_PATH
     b.train_label_path = mnist.TRAIN_LABEL_BATCH_PATH
     b.test_data_path = mnist.TEST_IMAGE_BATCH_PATH
@@ -103,21 +130,41 @@ def main():
     # gpu
     #
     my_gpu = plat.getGpu()
-    r = mnist.setup_dnn(my_gpu, config, batch_size)
+    r = mnist.setup_dnn(my_gpu, config, mode_q, batch_size)
     if r==None:
         return 0
     #
     
+    start_time = time.time()
     if mode==0: # train
         data_array, label_array = b.get_batch(batch_size, 0)
-        #print(data_array[0])
         t = train.Train(r)
         t.w_list = t.make_w_list()
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
 
         ce = r.evaluate(0)
-        t.main_simple_loop(0, 0, ce, iteration, num_attack)
+
+        num_attack_list = [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
+        na_idx = 0
+        for na in num_attack_list:
+            loop_cnt = 0
+            while 1:
+                ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, na)
+                if hit_rate<0.05 or loop_cnt>32 or ce<0.000001:
+                    break
+                #
+                loop_cnt += 1
+            #
+        #
+        
+        #for i in range(128):
+        #    na = num_attack_list[na_idx]
+        #    ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, na)
+        #    if hit_rate<0.05:
+        #        na_idx += 1
+        #    #
+        #
     elif mode==1: # test
         debug = 0
         single = 0
@@ -132,7 +179,6 @@ def main():
         b.prepare_mini_batch(batch_size)
         #b.mini_batch_size = batch_size
         #mini_batch_num = int(b.batch_size / b.mini_batch_size)
-        
         for l in range(loop):
             for n in range(b.mini_batch_num):
                 data_array, label_array = b.get_mini_batch(n*batch_size)
@@ -145,23 +191,25 @@ def main():
             b.shuffle_mini_batch()
         #
     elif mode==3: # train with momentum
-        data_array, label_array = b.get_batch(batch_size, 0)
+        data_array, label_array = b.get_batch(batch_size, 4000)
         t = train.Train(r)
         t.w_list = t.make_w_list()
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
         
-        for idx in range(10000):
-            t.momentum_loop(idx, 0, iteration, num_attack)
-            num_attack2 = 4
-            t.auto_momentum_loop(idx, 0, iteration, num_attack2)
-            r.save()
+        for idx in range(iteration):
+            #t.momentum_loop(idx, 0, 10, num_attack)
+            #num_attack2 = 4
+            #t.auto_momentum_loop(idx, 0, 10, num_attack2)
+            #r.save()
+            attack_num = 64
+            attack_list = t.momentum_challenge(idx, 0, 100, attack_num)
         #
+        r.save()
     elif mode==4: # mini batch train with momentum
         t = train.Train(r)
         t.w_list = t.make_w_list()
         b.prepare_mini_batch(batch_size)
-        
         for l in range(loop):
             for n in range(b.mini_batch_num):
                 data_array, label_array = b.get_mini_batch(n*batch_size)
@@ -169,18 +217,51 @@ def main():
                 r.direct_set_data(data_array)
                 r.direct_set_label(label_array)
                 
-                t.momentum_loop(l, n, iteration, num_attack)
-                num_attack2 = 4
-                t.auto_momentum_loop(l, n, iteration, num_attack2)
+                for i in range(1):
+                    attack_list = t.momentum_challenge(l, n, iteration, num_attack)
+                    ret = t.auto_momentum_challenge(l, n, iteration, attack_list, num_attack)
+                #
+                
+                #t.momentum_loop(l, n, iteration, num_attack)
+                #num_attack2 = 4
+                #t.auto_momentum_loop(l, n, iteration, num_attack2)
                 r.save()
             #
             #b.shuffle_mini_batch()
         #
     
-    
+    elif mode==5: # full quantization test
+        debug = 0
+        single = 0
+        ac = exam.classification(r, b, 1000, debug, single)
+        print(ac)
+        
+    elif mode==6:
+        data_array, label_array = b.get_batch(batch_size, 0)
+        t = train.Train(r)
+        t.w_list = t.make_w_list()
+        r.direct_set_data(data_array)
+        r.direct_set_label(label_array)
+        
+        
+        ce = r.evaluate(0)
+        t.main_simple_loop(0, 0, ce, iteration, num_attack)
+        
+        #iteration = 5
+        #for idx in range(10000):
+        #    num_attack = 4
+        #    t.momentum_loop(idx, 0, iteration, num_attack)
+        #    num_attack2 = 4
+        #    t.auto_momentum_loop(idx, 0, iteration, num_attack2)
+        #    r.save()
+        #
     else:
-        print("mode error")
+        print("main()::mode error")
     #
+    
+    elapsed_time = time.time() - start_time
+    t = format(elapsed_time, "0")
+    print(("time = %s" % (t)))
     
     return 0
     

@@ -2,13 +2,9 @@
 
 # 0:FC, 1:CNN, 2: weight value mode
 config=0
-# 0:train
-# 1:test
-# 2:mini batch train
-# 3:train with momentum
-# 4:mini batch train with momentum
-mode=3
-iteration=1000
+# 0:train, 1:test, 2:mini batch train, 3:train with momentum
+mode=6
+iteration=100000
 num_attack=4
 size=1000 # size of batch
 

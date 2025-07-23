@@ -5,8 +5,8 @@ config=0
 # 0:train, 1:test, 2:mini batch train, 3:train with momentum
 mode=0
 iteration=1000
-num_attack=4
-size=60000 # size of batch
+num_attack=512
+size=1000 # size of batch
 
 
 start_time=`date +%s`
