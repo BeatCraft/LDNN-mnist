@@ -68,10 +68,8 @@ def setup_dnn(my_gpu, config, mode_q=0, batch_size=0):
     r.set_gpu(my_gpu)
     if config==0: # fc with wi
         setup_fc(r, IMAGE_SIZE) # 28*28
-        # 0:even, 5:std, 7:3bit
-        r.wi_mode = 0
-        #r.wi_mode = 5
-        #r.wi_mode = 7
+        # 0:even, 5:std, 7: latest dev.
+        r.wi_mode = 7
     elif config==1: # cnn
         print("error, no cnn")
         return None

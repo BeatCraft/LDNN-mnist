@@ -6,6 +6,7 @@ import sys
 import time
 import numpy as np
 import random
+import csv
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ldnn'))
 import plat
@@ -52,7 +53,7 @@ def main():
         batch_size = int(argvs[3])
         exec_mode = 1
         print("test")
-    elif mode==2: # mini batch train
+    elif mode==2 or mode==7: # mini batch train
         if argc!=7:
             print("error", argc)
             return 0
@@ -136,17 +137,17 @@ def main():
     #
     
     start_time = time.time()
+        
     if mode==0: # train
-        data_array, label_array = b.get_batch(batch_size, 0)
         t = train.Train(r)
         t.w_list = t.make_w_list()
+        
+        data_array, label_array = b.get_batch(batch_size, 0)
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
 
         ce = r.evaluate(0)
-
         num_attack_list = [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
-        na_idx = 0
         for na in num_attack_list:
             loop_cnt = 0
             while 1:
@@ -157,14 +158,6 @@ def main():
                 loop_cnt += 1
             #
         #
-        
-        #for i in range(128):
-        #    na = num_attack_list[na_idx]
-        #    ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, na)
-        #    if hit_rate<0.05:
-        #        na_idx += 1
-        #    #
-        #
     elif mode==1: # test
         debug = 0
         single = 0
@@ -173,22 +166,31 @@ def main():
     elif mode==2: # mini batch train
         t = train.Train(r)
         t.w_list = t.make_w_list()
-        #
-        # mini-batch
-        #
         b.prepare_mini_batch(batch_size)
-        #b.mini_batch_size = batch_size
-        #mini_batch_num = int(b.batch_size / b.mini_batch_size)
-        for l in range(loop):
+        #num_attack_list = [64, 32, 16, 8, 4, 2, 1]
+        #num_attack_list = [32, 16, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+        #num_attack_list = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+        #for na in num_attack_list:
+        for i in range(1024):
+            #loop_cnt = 0
+            #while 1:
+            sum_hit_rate = 0.0
             for n in range(b.mini_batch_num):
+                print(i, "mini batch:", n, "/", b.mini_batch_num)
                 data_array, label_array = b.get_mini_batch(n*batch_size)
                 r.reset()
                 r.direct_set_data(data_array)
                 r.direct_set_label(label_array)
+                    
                 ce = r.evaluate()
-                t.main_simple_loop(l, n, ce, iteration, num_attack)
+                ce, hit_rate = t.main_simple_loop(0, 0, ce, 16, 4)
+                # simple challenge
+                sum_hit_rate += hit_rate
             #
+            ave_hit_rate = sum_hit_rate / b.mini_batch_num
+            print("*** ave_hit_rate:", ave_hit_rate)
             b.shuffle_mini_batch()
+            #loop_cnt += 1
         #
     elif mode==3: # train with momentum
         data_array, label_array = b.get_batch(batch_size, 4000)
@@ -254,6 +256,104 @@ def main():
         #    num_attack2 = 4
         #    t.auto_momentum_loop(idx, 0, iteration, num_attack2)
         #    r.save()
+        #
+        
+    elif mode==7: # stochastic mini batch train
+        t = train.Train(r)
+        t.w_list = t.make_w_list()
+        b.prepare_mini_batch(batch_size)
+
+        for i in range(1000): # epoc
+            ce_list = []
+            sum_ce = 0.0
+            for n in range(b.mini_batch_num):
+                data_array, label_array = b.get_mini_batch(n*batch_size)
+                r.reset()
+                r.direct_set_data(data_array)
+                r.direct_set_label(label_array)
+        
+                ce = r.evaluate()
+                ce_list.append((n, ce))
+                sum_ce += ce
+            #
+            avg_ce = sum_ce/b.mini_batch_num
+            sorted_data = sorted(ce_list, key=lambda x: x[1], reverse=True)
+            dif = (sorted_data[0][1] - sorted_data[-1][1]) / sorted_data[-1][1]
+            print("***", i, "*** average ce:", avg_ce, "(", sorted_data[-1][1], "-", sorted_data[0][1], ")", "***", dif, "***")
+            with open("./log.csv", mode='a', newline='') as file:
+                writer = csv.writer(file)
+                line = [i, sorted_data[-1][1], sorted_data[0][1], avg_ce]
+                writer.writerow(line)
+            #
+            
+            #if i % 10 == 0:
+            #    item = sorted_data[-1]
+            #else:
+            #    item = sorted_data[0]
+            #
+            
+            item = sorted_data[0]
+            #if i % 2 == 0:
+            #    item = sorted_data[0]
+            #else:
+            #    item = sorted_data[-1]
+            #
+            #for item in sorted_data[:int(batch_size*0.01)]:
+            #for item in sorted_data[:10]:
+            ce = avg_ce
+            if item:
+                n = item[0]
+                ce = item[1]
+                #print(i, n, ce)
+            
+                data_array, label_array = b.get_mini_batch(n*batch_size)
+                r.reset()
+                r.direct_set_data(data_array)
+                r.direct_set_label(label_array)
+                
+                #ce, hit_rate = t.main_simple_loop(0, 0, ce, 128, 4)
+                # adaptive control
+                rate = 0.01 # learning rate
+                if ce>2.0:
+                    rate = 0.1
+                    num_attack = 256
+                elif ce>1.5:
+                    rate = 0.1
+                    num_attack = 128
+                elif ce>1.0:
+                    rate = 0.1
+                    num_attack = 64
+                elif ce>0.5:
+                    rate = 0.1
+                    num_attack = 32
+                elif ce>0.3:
+                    rate = 0.1
+                    num_attack = 16
+                elif ce>0.2:
+                    rate = 0.1
+                    num_attack = 8
+                elif ce>0.1:
+                    rate = 0.1
+                    num_attack = 4
+                else:
+                    rate = 0.01
+                    num_attack = 4
+                #
+                
+                ce, hit_rate = t.main_challenge_loop(ce, rate, 512, num_attack, False)
+            #
+            #print(i, ce)
+            r.save()
+            b.shuffle_mini_batch()
+        #
+        
+        #ce, hit_rate = t.main_simple_loop(0, 0, ce, 16, 4)
+        #        # simple challenge
+        #        sum_hit_rate += hit_rate
+        #    #
+        #    ave_hit_rate = sum_hit_rate / b.mini_batch_num
+        #    print("*** ave_hit_rate:", ave_hit_rate)
+        #    b.shuffle_mini_batch()
         #
     else:
         print("main()::mode error")
