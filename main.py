@@ -16,7 +16,7 @@ import exam
 import train
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ptool'))
-import batch
+import batch2
 
 import mnist
 
@@ -33,7 +33,6 @@ def main():
     print("config=%d, mode=%d" % (config, mode))
     
     exec_mode = 0 # train:0, test:1
-    batch_quantize_mode = 0 # sacle only:0, fixed float:1, index:2
     mode_q = 0 # weight only:0, full:1
     
     if mode==0: # train
@@ -88,7 +87,6 @@ def main():
             return 0
         #
         batch_size = int(argvs[3])
-        batch_quantize_mode = 2
         mode_q = 1
         exec_mode = 1
         print("test for full quantozation")
@@ -100,7 +98,6 @@ def main():
         iteration = int(argvs[3])
         num_attack = int(argvs[4])
         batch_size = int(argvs[5])
-        batch_quantize_mode = 2
         mode_q = 1
         print("full quantization train")
     else:
@@ -113,19 +110,15 @@ def main():
     type = 0 # classification
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
-    # batch_quantize_mode
-    # 0 : float, from -1.0 to 1.0
-    # 1 : fixed values of float
-    # 2 : index to float table
-    b = batch.Batch(data_size, type, num_class, exec_mode, batch_quantize_mode)
-    b.train_data_path = mnist.TRAIN_IMAGE_BATCH_PATH
-    b.train_label_path = mnist.TRAIN_LABEL_BATCH_PATH
-    b.test_data_path = mnist.TEST_IMAGE_BATCH_PATH
-    b.test_label_path = mnist.TEST_LABEL_BATCH_PATH
-    b.load_mode()
-    b.scale()
-    b.quantize()
-    b.label_list_to_one_hot_vector()
+    b = batch2.Batch(data_size, type, num_class)
+    if exec_mode==0: # train
+        b.setDataPath(mnist.TRAIN_IMAGE_BATCH_PATH)
+        b.setLabelPath(mnist.TRAIN_LABEL_BATCH_PATH)
+    else: # test
+        b.setDataPath(mnist.TEST_IMAGE_BATCH_PATH)
+        b.setLabelPath(mnist.TEST_LABEL_BATCH_PATH)
+    #
+    b.loadDataAndLebel()
     
     #
     # gpu
@@ -142,7 +135,7 @@ def main():
         t = train.Train(r)
         t.w_list = t.make_w_list()
         
-        data_array, label_array = b.get_batch(batch_size, 0)
+        (data_array, label_list, label_array) = b.get_batch(batch_size, 0)
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
 
@@ -261,13 +254,14 @@ def main():
     elif mode==7: # stochastic mini batch train
         t = train.Train(r)
         t.w_list = t.make_w_list()
-        b.prepare_mini_batch(batch_size)
+        #b.prepare_mini_batch(batch_size)
 
         for i in range(1000): # epoc
             ce_list = []
             sum_ce = 0.0
             for n in range(b.mini_batch_num):
-                data_array, label_array = b.get_mini_batch(n*batch_size)
+                #(data_array, label_list, label_array) = b.get_mini_batch(n*batch_size)
+                (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
                 r.reset()
                 r.direct_set_data(data_array)
                 r.direct_set_label(label_array)
