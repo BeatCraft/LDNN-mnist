@@ -157,34 +157,7 @@ def main():
         ac = exam.classification(r, b, 1000, debug, single)
         print(ac)
     elif mode==2: # mini batch train
-        t = train.Train(r)
-        t.w_list = t.make_w_list()
-        b.prepare_mini_batch(batch_size)
-        #num_attack_list = [64, 32, 16, 8, 4, 2, 1]
-        #num_attack_list = [32, 16, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
-        #num_attack_list = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
-        #for na in num_attack_list:
-        for i in range(1024):
-            #loop_cnt = 0
-            #while 1:
-            sum_hit_rate = 0.0
-            for n in range(b.mini_batch_num):
-                print(i, "mini batch:", n, "/", b.mini_batch_num)
-                data_array, label_array = b.get_mini_batch(n*batch_size)
-                r.reset()
-                r.direct_set_data(data_array)
-                r.direct_set_label(label_array)
-                    
-                ce = r.evaluate()
-                ce, hit_rate = t.main_simple_loop(0, 0, ce, 16, 4)
-                # simple challenge
-                sum_hit_rate += hit_rate
-            #
-            ave_hit_rate = sum_hit_rate / b.mini_batch_num
-            print("*** ave_hit_rate:", ave_hit_rate)
-            b.shuffle_mini_batch()
-            #loop_cnt += 1
-        #
+        return 0
     elif mode==3: # train with momentum
         data_array, label_array = b.get_batch(batch_size, 4000)
         t = train.Train(r)
@@ -256,10 +229,52 @@ def main():
         t.w_list = t.make_w_list()
         #b.prepare_mini_batch(batch_size)
 
+        mini_batch_num = int(b.batch_size / batch_size)
+        ce_list = []
+        sum_ce = 0.0
+        #ce_list = []
+        for n in range(mini_batch_num):
+            (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
+            r.reset()
+            r.direct_set_data(data_array)
+            r.direct_set_label(label_array)
+        
+            ce = r.evaluate()
+            #ce_list.append((n, ce))
+            ce_list.append(ce)
+            #print(ce)
+            sum_ce += ce
+        #
+        std_sample = np.std(ce_list, ddof=1)
+        mean_value = np.mean(ce_list)
+        median_value = np.median(ce_list)
+        print(std_sample, mean_value, median_value)
+        
+        closest_index = min(range(mini_batch_num), key=lambda i: abs(ce_list[i] - mean_value))
+        print(closest_index, ce_list[closest_index])
+        
+        max_index = ce_list.index(max(ce_list))
+        print(max_index, ce_list[max_index])
+        
+        #(data_array, lavel_list, label_array) = b.get_batch_multi(batch_size, [closest_index*batch_size, max_index*batch_size])
+        #r.reset()
+        
+        #
+        # realloc memory
+        #
+        
+        #r.direct_set_data(data_array)
+        #r.direct_set_label(label_array)
+        #ce = r.evaluate()
+        #ce, hit_rate = t.main_challenge_loop(ce, rate, 512, num_attack, False)
+        
+        return 0
+        
+        
         for i in range(1000): # epoc
             ce_list = []
             sum_ce = 0.0
-            for n in range(b.mini_batch_num):
+            for n in range(mini_batch_num):
                 #(data_array, label_list, label_array) = b.get_mini_batch(n*batch_size)
                 (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
                 r.reset()
@@ -270,7 +285,7 @@ def main():
                 ce_list.append((n, ce))
                 sum_ce += ce
             #
-            avg_ce = sum_ce/b.mini_batch_num
+            avg_ce = sum_ce/mini_batch_num
             sorted_data = sorted(ce_list, key=lambda x: x[1], reverse=True)
             dif = (sorted_data[0][1] - sorted_data[-1][1]) / sorted_data[-1][1]
             print("***", i, "*** average ce:", avg_ce, "(", sorted_data[-1][1], "-", sorted_data[0][1], ")", "***", dif, "***")
@@ -285,7 +300,6 @@ def main():
             #else:
             #    item = sorted_data[0]
             #
-            
             item = sorted_data[0]
             #if i % 2 == 0:
             #    item = sorted_data[0]
@@ -300,7 +314,8 @@ def main():
                 ce = item[1]
                 #print(i, n, ce)
             
-                data_array, label_array = b.get_mini_batch(n*batch_size)
+                #data_array, label_array = b.get_mini_batch(n*batch_size)
+                data_array, lavel_list, label_array = b.get_batch(batch_size, n*batch_size)
                 r.reset()
                 r.direct_set_data(data_array)
                 r.direct_set_label(label_array)
@@ -338,7 +353,7 @@ def main():
             #
             #print(i, ce)
             r.save()
-            b.shuffle_mini_batch()
+            #b.shuffle_mini_batch()
         #
         
         #ce, hit_rate = t.main_simple_loop(0, 0, ce, 16, 4)
