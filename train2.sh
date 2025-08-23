@@ -10,7 +10,7 @@ size=1000 # size of batch
 
 
 start_time=`date +%s`
-python3 ./main.py $config $mode $iteration $num_attack $size
+python3 ./main2.py $config $mode $iteration $num_attack $size
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

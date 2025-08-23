@@ -16,7 +16,7 @@ import exam
 import train
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../ptool'))
-import batch2
+import batch3
 
 import mnist
 
@@ -107,19 +107,21 @@ def main():
     #
     # batch
     #
-    type = 0 # classification
+    mtype = 0 # classification
     data_size = mnist.IMAGE_SIZE
     num_class = mnist.NUM_CLASS
-    b = batch2.Batch(data_size, type, num_class)
+    b = batch3.Batch(data_size, mtype, num_class)
     if exec_mode==0: # train
-        b.setDataPath(mnist.TRAIN_IMAGE_BATCH_PATH)
-        b.setLabelPath(mnist.TRAIN_LABEL_BATCH_PATH)
+        #b.setDataPath(mnist.TRAIN_IMAGE_BATCH_PATH)
+        #b.setLabelPath(mnist.TRAIN_LABEL_BATCH_PATH)
+        pass
     else: # test
         b.setDataPath(mnist.TEST_IMAGE_BATCH_PATH)
         b.setLabelPath(mnist.TEST_LABEL_BATCH_PATH)
     #
-    b.loadDataAndLebel()
-    
+    #b.loadDataAndLebel()
+    (data_array, label_list, label_array) = b.load_compressed("./batch/compressd/")
+    batch_size = len(label_list)
     #
     # gpu
     #
@@ -135,11 +137,18 @@ def main():
         t = train.Train(r)
         t.w_list = t.make_w_list()
         
-        (data_array, label_list, label_array) = b.get_batch(batch_size, 0)
+        #(data_array, label_list, label_array) = b.get_batch(batch_size, 0)
+        print(data_array[0].shape)
+        print( type(data_array[0]) )
+        print(label_array.shape)
+        
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
 
         ce = r.evaluate(0)
+        print(ce)
+        #return 0
+        
         num_attack_list = [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
         for na in num_attack_list:
             loop_cnt = 0
