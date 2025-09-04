@@ -9,7 +9,7 @@ num=100 # loop
 
 start_time=`date +%s`
 
-for i in $(seq 1 100); do
+for i in $(seq 1 1000); do
     echo "Number: $i"
     python3 ./main.py $config $mode $iteration $num_attack $size $num
 done

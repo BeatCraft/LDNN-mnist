@@ -227,51 +227,51 @@ def main():
     elif mode==7: # stochastic mini batch train
         t = train.Train(r)
         t.w_list = t.make_w_list()
-        #b.prepare_mini_batch(batch_size)
-
         mini_batch_num = int(b.batch_size / batch_size)
         ce_list = []
         sum_ce = 0.0
-        #ce_list = []
+
         for n in range(mini_batch_num):
             (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
             r.reset()
             r.direct_set_data(data_array)
             r.direct_set_label(label_array)
-        
             ce = r.evaluate()
-            #ce_list.append((n, ce))
             ce_list.append(ce)
-            #print(ce)
             sum_ce += ce
         #
-        std_sample = np.std(ce_list, ddof=1)
-        mean_value = np.mean(ce_list)
-        median_value = np.median(ce_list)
-        print(std_sample, mean_value, median_value)
+        
+        #std_sample = np.std(ce_list, ddof=1)
+        #mean_value = np.mean(ce_list)
+        #median_value = np.median(ce_list)
+        #print(std_sample, mean_value, median_value)
         
         #closest_index = min(range(mini_batch_num), key=lambda i: abs(ce_list[i] - mean_value))
-        #print(closest_index, ce_list[closest_index])
         
-        closest_indices = sorted(
+        #closest_indices = sorted(
+        #    range(mini_batch_num),
+        #    key=lambda i: abs(ce_list[i] - mean_value)
+        #)[:3]
+        #print(closest_indices)
+        
+        
+        #min_index = ce_list.index(min(ce_list))
+        #max_index = ce_list.index(max(ce_list))
+        #print(min_index, max_index)
+
+        
+        #closest_indices.append(min_index)
+        #closest_indices.append(max_index)
+        #print(closest_indices)
+        #(data_array, lavel_list, label_array) = b.get_batch_multi(batch_size, closest_indices)
+        
+        worst_indices = sorted(
             range(mini_batch_num),
-            key=lambda i: abs(ce_list[i] - mean_value)
-        )[:3]
-        
-        print(closest_indices)
-        
-        
-        min_index = ce_list.index(min(ce_list))
-        max_index = ce_list.index(max(ce_list))
-        print(min_index, max_index)
-        #print(max_index, ce_list[max_index])
-        
-        closest_indices.append(min_index)
-        closest_indices.append(max_index)
-        print(closest_indices)
-        
-        (data_array, lavel_list, label_array) = b.get_batch_multi(batch_size, closest_indices)
-        
+            key=lambda i: ce_list[i],
+            reverse=True
+        )[:5]
+        print(worst_indices)
+        (data_array, lavel_list, label_array) = b.get_batch_multi(batch_size, worst_indices)
         #return 0
                 
         
@@ -290,7 +290,8 @@ def main():
         
         ce = r.evaluate()
         print(ce)
-        ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, 4)
+        ce, hit_rate = t.main_simple_loop(0, 0, ce, 1000, 4)
+        print("CE:", ce)
         r.save()
         #
         return 0
