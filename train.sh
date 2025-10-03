@@ -6,7 +6,7 @@ config=0
 mode=0
 iteration=1000
 num_attack=64
-size=1000 # size of batch
+size=2000 # size of batch
 
 
 start_time=`date +%s`

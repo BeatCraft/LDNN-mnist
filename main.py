@@ -140,6 +140,9 @@ def main():
         r.direct_set_label(label_array)
 
         ce = r.evaluate(0)
+        #print("CE:", ce)
+        #return 0
+        
         num_attack_list = [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
         for na in num_attack_list:
             loop_cnt = 0
