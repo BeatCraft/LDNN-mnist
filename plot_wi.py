@@ -19,11 +19,17 @@ import matplotlib.cm as cm
 WEIGHT_SET_0 = [-1.0, -0.5, -0.25, -0.125, -0.0625, 0, 0.0625, 0.125, 0.25, 0.5, 1.0] # 11
 WEIGHT_SET_1 = [-1.0, -0.5, -0.25, -0.125, 0.0, 0.125, 0.25, 0.5, 1.0] # 9
 WEIGHT_SET_2 = [-1.0, -0.5, -0.25, -0.125, 0.125, 0.25, 0.5, 1.0] # 8
-
+WEIGHT_SET_3 = [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
+ 0,
+ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] # 21
+ 
 str_WEIGHT_SET_0 = ["-1.0", "-0.5", "-0.25", "-0.125", "-0.0625", "0", "0.0625", "0.125", "0.25", "0.5", "1.0"]
 str_WEIGHT_SET_1 = ["-1.0", "-0.5", "-0.25", "-0.125", "0", "0.125", "0.25", "0.5", "1.0"]
 str_WEIGHT_SET_2 = ["-1.0", "-0.5", "-0.25", "-0.125", "0.125", "0.25", "0.5", "1.0"]
-
+str_WEIGHT_SET_3 = ["-1.0", "-0.9", "-0.8", "-0.7", "-0.6", "-0.5", "-0.4", "-0.3", "-0.2", "-0.1",
+ "0",
+ "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"] # 21
+ 
 def import_synapse_network(path):
     print("import_synapse_network(%s)" % (path))
     with open(path, "r") as f:
@@ -70,7 +76,7 @@ def main():
     wv_list = import_weight_index(wi_path)
     #print(wv_list)
     
-    num_wi = len(WEIGHT_SET_0)
+    num_wi = len(WEIGHT_SET_3)
     hist_list = [0]*num_wi
     print(hist_list, len(wv_list))
         
@@ -85,7 +91,7 @@ def main():
     plt.figure(figsize=(4,2))
     #plt.plot(WEIGHT_SET, hist_list)
     #plt.bar([0,1,2,3,4,5,6,7,8], hist_list, linewidth=0)
-    plt.bar(str_WEIGHT_SET_0, hist_list, width=0.5, linewidth=0)
+    plt.bar(str_WEIGHT_SET_3, hist_list, width=0.5, linewidth=0)
     
     #plt.plot(WEIGHT_SET, hist_list, label="Weight")
     #plt.plot(xlist, y1_list, label="Accuracy")

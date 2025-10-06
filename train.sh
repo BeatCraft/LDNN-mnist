@@ -5,12 +5,19 @@ config=0
 # 0:train, 1:test, 2:mini batch train, 3:train with momentum
 mode=0
 iteration=1000
-num_attack=64
-size=2000 # size of batch
-
+num_attack=4
+size=1000 # size of batch
+bi=2
 
 start_time=`date +%s`
-python3 ./main.py $config $mode $iteration $num_attack $size
+
+for i in `seq 1 1000`
+do
+    echo "i = $i"
+    python3 ./main.py $config $mode $iteration $num_attack $size $bi
+done
+
+
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))
