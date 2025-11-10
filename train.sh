@@ -1,23 +1,32 @@
 #!/bin/sh
 
-# 0:FC, 1:CNN, 2: weight value mode
+# 0:FC, 1:CNN
 config=0
-# 0:train, 1:test, 2:mini batch train, 3:train with momentum
-mode=0
+
+# 0:train, 1:test, ...
+exec_mode=1
+
+# weight mode
+# 0:wi(uint8), 0:w (float16)
+weight_mode=0
+
+# size of batch
+size=1000
+
+#
+# training parameters
+#
 iteration=1000
 num_attack=4
-size=1000 # size of batch
-bi=2
+bi=0 # batch index
 
 start_time=`date +%s`
 
 for i in `seq 1 1000`
 do
     echo "i = $i"
-    python3 ./main.py $config $mode $iteration $num_attack $size $bi
+    python3 ./main.py $config $exec_mode $weight_mode $size $iteration $num_attack $bi
 done
-
-
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

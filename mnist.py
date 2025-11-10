@@ -15,6 +15,8 @@ LABEL_HEADER_SIZE  = 8
 IMAGE_SIZE = 784
 NUM_CLASS = 10
 
+MODEL_TYPE = 0 # classification
+
 DATA_BASE_PATH = "./data/"
 TRAIN_IMAGE_PATH = DATA_BASE_PATH + "train-images-idx3-ubyte"
 TRAIN_LABEL_PATH = DATA_BASE_PATH + "train-labels-idx1-ubyte"
@@ -53,9 +55,13 @@ def setup_fc(r, size):
     output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
     r.layers.append(output)
 
-def setup_dnn(my_gpu, config, mode_q=0, batch_size=0):
+def setup_dnn(my_gpu, config, wmode=0, qmode=0, batch_size=0):
     if config==0:
-        wpath = "./wi-fc.csv"
+        if wmode==0:
+            wpath = "./wi-fc.csv"
+        else:
+            wpath = "./w-fc.csv"
+        #
     elif config==1:
         wpath = "./wi-cnn.csv"
     elif config==2:
@@ -70,23 +76,27 @@ def setup_dnn(my_gpu, config, mode_q=0, batch_size=0):
         setup_fc(r, IMAGE_SIZE) # 28*28
         # 0:even, 5:std, 7: latest dev.
         r.wi_mode = 7
-    elif config==1: # cnn
-        print("error, no cnn")
-        return None
-    elif config==2: # fc with float value
-        r.wi_mode = 6
     else:
         print("error config", config)
+        return None
+    #
+    #elif config==1: # cnn
+    #    print("error, no cnn")
+    #    return None
+    #elif config==2: # fc with float value
+    #    r.wi_mode = 6
+    #else:
+    #    print("error config", config)
     #
     
     r._batch_size = batch_size
     r.set_path(wpath)
     #r.set_scale_input(1)
-    r.set_mode_q(mode_q) # 0:old, 1:new
+    r.set_qmode(qmode) # 0:old, 1:new
     print("batch_size", batch_size)
     r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)
     
-    r.load()
+    r.load(wpath, wmode)
     r.update_weight()
     return r
     
