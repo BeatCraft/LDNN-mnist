@@ -52,21 +52,31 @@ def setup_fc(r, size):
     
     # output
     c = r.count_layers()
-    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu)
+    smax = True
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu, smax)
     r.layers.append(output)
 
-def setup_dnn(my_gpu, config, wmode=0, qmode=0, batch_size=0):
-    if config==0:
-        if wmode==0:
-            wpath = "./wi-fc.csv"
-        else:
+def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
+    if config==0: # FC
+        if exe_mode==0: # train
+            if wmode==0:
+                wpath = "./wi-fc.csv"
+            elif wmode==1:
+                wpath = "./w-fc.csv"
+            #
+        elif exe_mode==1: # test
+            if wmode==0:
+                wpath = "./wi-fc.csv"
+            elif wmode==1:
+                wpath = "./w-fc.csv"
+            #
+        elif exe_mode==3 or exe_mode==4: # train bp
             wpath = "./w-fc.csv"
+        else:
+            wpath = "./wi-fc.csv"
         #
-    elif config==1:
-        wpath = "./wi-cnn.csv"
-    elif config==2:
-        wpath = "./w.csv"
     else:
+        print("not yet")
         return None
     #
     
@@ -80,19 +90,11 @@ def setup_dnn(my_gpu, config, wmode=0, qmode=0, batch_size=0):
         print("error config", config)
         return None
     #
-    #elif config==1: # cnn
-    #    print("error, no cnn")
-    #    return None
-    #elif config==2: # fc with float value
-    #    r.wi_mode = 6
-    #else:
-    #    print("error config", config)
-    #
     
     r._batch_size = batch_size
     r.set_path(wpath)
     #r.set_scale_input(1)
-    r.set_qmode(qmode) # 0:old, 1:new
+    r.set_qmode(qmode) # 0:32bit, 1:16bit
     print("batch_size", batch_size)
     r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)
     

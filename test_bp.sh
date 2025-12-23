@@ -7,9 +7,8 @@ config=0
 exec_mode=1
 
 # weight mode
-# 0:index(uint8), 1:value (float16)
-wmode=0
-
+# 0:wi(uint8), 1:value/float
+wmode=1
 # quantaization mode
 # 0:32bit, 1:16bit, 2:8bit
 qmode=0
@@ -17,10 +16,9 @@ qmode=0
 # size of batch
 size=1000
 
-
 start_time=`date +%s`
 
-python3 ./main.py $config $exec_mode $wmode $qmode $size
+python3 ./main.py $config $exec_mode $wmode $qmode $size 
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))

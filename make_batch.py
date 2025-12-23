@@ -30,12 +30,14 @@ def make_batch(batch_size,
     file_in = open(image_path_in, 'rb')
     header = file_in.read(mnist.IMAGE_HEADER_SIZE)
     #
-    images = np.zeros((batch_size, (mnist.IMAGE_SIZE)), dtype=np.float16)
+    #images = np.zeros((batch_size, (mnist.IMAGE_SIZE)), dtype=np.float16)
+    images = np.zeros((batch_size, (mnist.IMAGE_SIZE)), dtype=np.float32)
     #
     for i in range(batch_size):
         image = file_in.read(mnist.IMAGE_SIZE)
         da = np.frombuffer(image, dtype=np.uint8)
-        a_float = da.astype(np.float16) # convert from uint8 to float32
+        #a_float = da.astype(np.float16) # convert from uint8 to float32
+        a_float = da.astype(np.float32)
         images[i] = a_float
     #
     print((len(labels)))

@@ -11,3 +11,4 @@ obsolute/
 *.zero
 exclude/
 *.pickle
+csv/
