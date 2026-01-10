@@ -39,24 +39,32 @@ def setup_cnn(r, size):
     c = r.count_layers()
     input = core.InputLayer(c, size, size, None, r._gpu)
     r.layers.append(input)
-
+    
+    # cnn
     c = r.count_layers()
-    cnn_1 = Conv_5_Layer(c, size, size, 1, 8, 3, 1, input, r._gpu)
-
-
-
-    # hidden 1
+    cnn_1 = core.Conv_4_Layer(c, 28, 28, 3, 8, input, r._gpu)
+    r.layers.append(cnn_1)
+    
+    # max
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 256, 64, hidden_1, r._gpu)
+    max_1 = core.MaxLayer(c, 8, 28, 28, cnn_1, r._gpu)
+    r.layers.append(max_1)
+    
+    # fc
+    c = r.count_layers()
+    hidden_1 = core.HiddenLayer(c, 14*14*8, 256, max_1, r._gpu)
     r.layers.append(hidden_1)
+    
+    # fc
+    c = r.count_layers()
+    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
+    r.layers.append(hidden_2)
     
     # output
     c = r.count_layers()
     smax = True
-    output = core.OutputLayer(c, 64, 10, hidden_1, r._gpu, smax)
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu, smax)
     r.layers.append(output)
-    
-
 
 def setup_fc(r, size):
     print("setup_fc(%d)" % (size))
@@ -103,11 +111,11 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
     elif config==1: # CNN
         if exe_mode==1: # test
             if wmode==0:
-                wpath = "./wi-fc.csv"
+                wpath = "./wi-cnn.csv"
             elif wmode==1:
                 print("not yet")
                 return None
-                #wpath = "./w-fc.csv"
+                wpath = "./w-cnn.csv"
             #
         else:
             print("not yet")
@@ -124,9 +132,10 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
         setup_fc(r, IMAGE_SIZE) # 28*28
         # 0:even, 5:std, 7: latest dev.
         r.wi_mode = 7
-    elif config==0: # cnn with wi
-        print("error config", config)
-        return None
+    elif config==1: # cnn with wi
+        print("config CNN", config)
+        setup_cnn(r, IMAGE_SIZE) # 28*28
+        r.wi_mode = 7
     else:
         print("error config", config)
         return None

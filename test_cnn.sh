@@ -7,7 +7,7 @@ config=1
 exec_mode=1
 
 # weight mode
-# 0:index(uint8), 1:value (float16)
+# 0:index(uint8), 1:value (float32)
 wmode=0
 
 # quantaization mode
