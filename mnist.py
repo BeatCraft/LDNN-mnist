@@ -32,7 +32,32 @@ TRAIN_LABEL_BATCH_PATH = BATCH_BASE_PATH + "train_label_batch.pickle"
 TEST_BATCH_SIZE = 10000
 TEST_IMAGE_BATCH_PATH = BATCH_BASE_PATH + "test_image_batch.pickle"
 TEST_LABEL_BATCH_PATH = BATCH_BASE_PATH + "test_label_batch.pickle"
-        
+
+def setup_cnn(r, size):
+    print("setup_fc(%d)" % (size))
+
+    c = r.count_layers()
+    input = core.InputLayer(c, size, size, None, r._gpu)
+    r.layers.append(input)
+
+    c = r.count_layers()
+    cnn_1 = Conv_5_Layer(c, size, size, 1, 8, 3, 1, input, r._gpu)
+
+
+
+    # hidden 1
+    c = r.count_layers()
+    hidden_1 = core.HiddenLayer(c, 256, 64, hidden_1, r._gpu)
+    r.layers.append(hidden_1)
+    
+    # output
+    c = r.count_layers()
+    smax = True
+    output = core.OutputLayer(c, 64, 10, hidden_1, r._gpu, smax)
+    r.layers.append(output)
+    
+
+
 def setup_fc(r, size):
     print("setup_fc(%d)" % (size))
 
@@ -75,6 +100,19 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
         else:
             wpath = "./wi-fc.csv"
         #
+    elif config==1: # CNN
+        if exe_mode==1: # test
+            if wmode==0:
+                wpath = "./wi-fc.csv"
+            elif wmode==1:
+                print("not yet")
+                return None
+                #wpath = "./w-fc.csv"
+            #
+        else:
+            print("not yet")
+            return None
+        #
     else:
         print("not yet")
         return None
@@ -86,6 +124,9 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
         setup_fc(r, IMAGE_SIZE) # 28*28
         # 0:even, 5:std, 7: latest dev.
         r.wi_mode = 7
+    elif config==0: # cnn with wi
+        print("error config", config)
+        return None
     else:
         print("error config", config)
         return None
