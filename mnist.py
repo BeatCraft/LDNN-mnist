@@ -42,7 +42,7 @@ def setup_cnn(r, size):
     
     # cnn
     c = r.count_layers()
-    cnn_1 = core.Conv_4_Layer(c, 28, 28, 3, 8, input, r._gpu)
+    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 8, input, r._gpu)
     r.layers.append(cnn_1)
     
     # max
@@ -109,14 +109,20 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
             wpath = "./wi-fc.csv"
         #
     elif config==1: # CNN
-        if exe_mode==1: # test
+        if exe_mode==0: # train
             if wmode==0:
                 wpath = "./wi-cnn.csv"
             elif wmode==1:
-                print("not yet")
-                return None
                 wpath = "./w-cnn.csv"
             #
+        elif exe_mode==1: # test
+            if wmode==0:
+                wpath = "./wi-cnn.csv"
+            elif wmode==1:
+                wpath = "./w-cnn.csv"
+            #
+        elif exe_mode==3: # train bp
+            wpath = "./w-cnn.csv"
         else:
             print("not yet")
             return None

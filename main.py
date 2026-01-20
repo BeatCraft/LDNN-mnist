@@ -151,11 +151,12 @@ def main():
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
         
-        debug = 0
+        debug = 1
         ce = r.evaluate(debug)
         print("CE:", ce)
-        #r.bp(debug)
-        #return 0
+        r.bp(debug)
+        return 0
+        
         
         debug = 0
         for i in range(100): # 65
