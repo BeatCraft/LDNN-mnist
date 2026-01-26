@@ -4,18 +4,17 @@
 config=1
 
 # 0:train, 1:test, ...
-exec_mode=0
+exec_mode=4
 
 # weight mode
-# 0:wi(uint8), 0:w (float16)
-weight_mode=0
-
+# 0:wi(uint8), 1:value(float)
+weight_mode=1
 # quantaization mode
 # 0:32bit, 1:16bit, 2:8bit
 qmode=0
 
 # size of batch
-size=1000
+size=30
 
 #
 # training parameters
@@ -26,7 +25,9 @@ bi=0 # batch index
 
 start_time=`date +%s`
 
-for i in `seq 1 1000`
+
+
+for i in `seq 1 10`
 do
     echo "i = $i"
     python3 ./main.py $config $exec_mode $weight_mode $qmode $size $iteration $num_attack $bi

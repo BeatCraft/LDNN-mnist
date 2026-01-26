@@ -26,14 +26,12 @@ bi=0 # batch index
 
 start_time=`date +%s`
 
-for i in `seq 1 50`
+for i in `seq 1 1`
 do
     echo "i = $i"
     python3 ./main.py $config $exec_mode $weight_mode $qmode $size $iteration $num_attack $bi
 done
 
-
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))
-echo "elapsed_time"
-echo  $elapsed_time
+echo "elapsed_time:" $elapsed_time

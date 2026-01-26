@@ -77,7 +77,8 @@ def main():
     #
     
     start_time = time.time()
-        
+    print("exec_mode:", exec_mode)
+            
     if exec_mode==0: # train
         t = train.Train(r)
         t.w_list = t.make_w_list()
@@ -109,39 +110,71 @@ def main():
         ac = exam.classification(r, b, 1000, debug, single)
         print(ac)
     elif exec_mode==2: # mini batch train
+        print("mini batch train")
         ce_list = []
         #sum_ce = 0.0
         mini_batch_num = int(b.batch_size / batch_size)
-        for n in range(mini_batch_num):
-            (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
-            r.reset()
-            r.direct_set_data(data_array)
-            r.direct_set_label(label_array)
-        
-            ce = r.evaluate()
-            #print(ce)
-            ce_list.append((n, ce))
-        #
-        sorted_data = sorted(ce_list, key=lambda x: x[1], reverse=False)
         
         t = train.Train(r)
         t.w_list = t.make_w_list()
         
-        #for i in range(10):
-        for sd in sorted_data:
-            bi = sd[0]
-            (data_array, label_list, label_array) = b.get_batch(batch_size, bi)
-            r.reset()
+        ce_sum = 0.0
+        ce_cnt = 0
+        for n in range(mini_batch_num):
+            (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
             r.direct_set_data(data_array)
             r.direct_set_label(label_array)
             
-            ce = r.evaluate(0)
-            #ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, 64)
+            ce = r.evaluate()
             loop_max = 100
-            ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
+            for i in range(10):
+                ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
+            #
+            
+            #ce_sum += ce
+            #ce_cnt += 1
+            #ce_avg = ce_sum / float(ce_cnt)
+            #if ce<ce_avg:
+            #    ce_dif = 0
+            #else:
+            #    ce_dif = abs(ce_avg - ce) / ce_avg
+            #
+            #while ce_dif>0.2:
+            #    print(n, "+++", ce_dif, ce, ce_avg)
+            #    ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
+                #ce_sum += ce
+                #ce_cnt += 1
+                #ce_avg = ce_sum / float(ce_cnt)
+            #    if ce<ce_avg:
+            #        ce_dif = 0
+            #    else:
+            #        ce_dif = abs(ce_avg - ce) / ce_avg
+                #
+            #
+            r.reset()
+            print("++++")
+            #r.save()
+                    
         #
         r.save()
+        
+        #sorted_data = sorted(ce_list, key=lambda x: x[1], reverse=False)
+        #for i in range(10):
+        #for sd in sorted_data:
+        #    bi = sd[0]
+        #    (data_array, label_list, label_array) = b.get_batch(batch_size, bi)
+        #    r.reset()
+        #    r.direct_set_data(data_array)
+        #    r.direct_set_label(label_array)
+        #
+        #    ce = r.evaluate(0)
+        #    #ce, hit_rate = t.main_simple_loop(0, 0, ce, 100, 64)
+        #    loop_max = 100
+        #    ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
+        #
+        #r.save()
     elif exec_mode==3: # train bp
+        print("train bp")
         print("exec_mode:", exec_mode)
         t = train.Train(r)
         #t.w_list = t.make_w_list()
@@ -151,15 +184,14 @@ def main():
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
         
-        debug = 1
-        ce = r.evaluate(debug)
-        print("CE:", ce)
-        r.bp(debug)
-        return 0
-        
+        #debug = 1
+        #ce = r.evaluate(debug)
+        #print("CE:", ce)
+        #r.bp(debug)
+        #return 0
         
         debug = 0
-        for i in range(100): # 65
+        for i in range(100):
             ce = r.evaluate(debug)
             print(i, "CE:", ce)
             r.bp(debug)
@@ -167,37 +199,28 @@ def main():
         #
         r.save(wmode)
     elif exec_mode==4: # train bp with mini batch
+        print("train bp with mini batch")
         debug = 0
         t = train.Train(r)
-        r.set_backpropagation(True, 0.01)
+        r.set_backpropagation(True, 0.005)
         mini_batch_num = int(b.batch_size / batch_size)
-
-        ce = 10.0
-        ce_alt = 0.0
-        cnt = 0
         
-        (data_array, label_list, label_array) = b.get_batch(batch_size, 0)
-        r.direct_set_data(data_array)
-        r.direct_set_label(label_array)
-        ce = r.evaluate(debug)
-        
-        for n in range(mini_batch_num):
-            if n>0:
-                r.reset()
-                (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
-                r.direct_set_data(data_array)
-                r.direct_set_label(label_array)
-            #
+        for n in range(iteration):
+            k = random.randint(0, mini_batch_num-1)
+            print("loop", n, k, mini_batch_num)
+            (data_array, label_list, label_array) = b.get_batch(batch_size, k*batch_size)
+            r.direct_set_data(data_array)
+            r.direct_set_label(label_array)
+            debug = 0
             for i in range(10):
-                ce_alt = r.evaluate(debug)
-                print("(%d/%d)" % (cnt, mini_batch_num), n, i, "CE:", ce_alt)
+                ce = r.evaluate(debug)
+                print(n, i, "CE:", ce)
                 r.bp(debug)
                 r.update_weight()
             #
-            ce = ce_alt
-
-            cnt += 1
+            r.reset()
         #
+        
         r.save(wmode)
     #
     

@@ -44,31 +44,26 @@ def setup_cnn(r, size):
     c = r.count_layers()
     cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 8, input, r._gpu)
     r.layers.append(cnn_1)
-
-    # cnn
-    c = r.count_layers()
-    cnn_2 = core.Conv_4_Layer(c, 28, 28, 8, 16, cnn_1, r._gpu)
-    r.layers.append(cnn_2)
     
     # max
     c = r.count_layers()
-    max_1 = core.MaxLayer(c, 16, 28, 28, cnn_2, r._gpu)
+    max_1 = core.MaxLayer(c, 8, 28, 28, cnn_1, r._gpu)
     r.layers.append(max_1)
     
     # fc
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 14*14*16, 128, max_1, r._gpu)
+    hidden_1 = core.HiddenLayer(c, 14*14*8, 256, max_1, r._gpu)
     r.layers.append(hidden_1)
     
     # fc
-    #c = r.count_layers()
-    #hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
-    #r.layers.append(hidden_2)
+    c = r.count_layers()
+    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
+    r.layers.append(hidden_2)
     
     # output
     c = r.count_layers()
     smax = True
-    output = core.OutputLayer(c, 128, 10, hidden_1, r._gpu, smax)
+    output = core.OutputLayer(c, 256, 10, hidden_2, r._gpu, smax)
     r.layers.append(output)
 
 def setup_fc(r, size):
@@ -114,7 +109,7 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
             wpath = "./wi-fc.csv"
         #
     elif config==1: # CNN
-        if exe_mode==0 or  exe_mode==2: # train
+        if exe_mode==0: # train
             if wmode==0:
                 wpath = "./wi-cnn.csv"
             elif wmode==1:
