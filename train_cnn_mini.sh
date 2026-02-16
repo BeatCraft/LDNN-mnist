@@ -15,7 +15,7 @@ weight_mode=0
 qmode=0
 
 # size of batch
-size=2000
+size=10000
 
 #
 # training parameters

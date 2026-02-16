@@ -120,7 +120,11 @@ def main():
         
         ce_sum = 0.0
         ce_cnt = 0
-        for n in range(mini_batch_num):
+        
+        idx_list = list(range(mini_batch_num))
+        random.shuffle(idx_list)
+        #for n in range(mini_batch_num):
+        for n in idx_list:
             (data_array, label_list, label_array) = b.get_batch(batch_size, n*batch_size)
             r.direct_set_data(data_array)
             r.direct_set_label(label_array)
@@ -130,31 +134,9 @@ def main():
             for i in range(10):
                 ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
             #
-            
-            #ce_sum += ce
-            #ce_cnt += 1
-            #ce_avg = ce_sum / float(ce_cnt)
-            #if ce<ce_avg:
-            #    ce_dif = 0
-            #else:
-            #    ce_dif = abs(ce_avg - ce) / ce_avg
-            #
-            #while ce_dif>0.2:
-            #    print(n, "+++", ce_dif, ce, ce_avg)
-            #    ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
-                #ce_sum += ce
-                #ce_cnt += 1
-                #ce_avg = ce_sum / float(ce_cnt)
-            #    if ce<ce_avg:
-            #        ce_dif = 0
-            #    else:
-            #        ce_dif = abs(ce_avg - ce) / ce_avg
-                #
-            #
             r.reset()
             print("++++")
             #r.save()
-                    
         #
         r.save()
         

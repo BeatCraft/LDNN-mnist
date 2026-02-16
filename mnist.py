@@ -42,29 +42,29 @@ def setup_cnn(r, size):
     
     # cnn
     c = r.count_layers()
-    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 8, input, r._gpu)
+    cnn_1 = core.Conv_4_Layer(c, 28, 28, 1, 32, input, r._gpu)
     r.layers.append(cnn_1)
 
+    # max
+    c = r.count_layers()
+    max_1 = core.MaxLayer(c, 32, 28, 28, cnn_1, r._gpu)
+    r.layers.append(max_1)
+    
     # cnn
     c = r.count_layers()
-    cnn_2 = core.Conv_4_Layer(c, 28, 28, 8, 16, cnn_1, r._gpu)
+    cnn_2 = core.Conv_4_Layer(c, 14, 14, 32, 64, max_1, r._gpu)
     r.layers.append(cnn_2)
     
     # max
     c = r.count_layers()
-    max_1 = core.MaxLayer(c, 16, 28, 28, cnn_2, r._gpu)
-    r.layers.append(max_1)
+    max_2 = core.MaxLayer(c, 64, 14, 14, cnn_2, r._gpu)
+    r.layers.append(max_2)
     
     # fc
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, 14*14*16, 128, max_1, r._gpu)
+    hidden_1 = core.HiddenLayer(c, 7*7*64, 128, max_2, r._gpu)
     r.layers.append(hidden_1)
-    
-    # fc
-    #c = r.count_layers()
-    #hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
-    #r.layers.append(hidden_2)
-    
+
     # output
     c = r.count_layers()
     smax = True

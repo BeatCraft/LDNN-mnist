@@ -26,7 +26,7 @@ bi=0 # batch index
 
 start_time=`date +%s`
 
-for i in `seq 1 1000`
+for i in `seq 1 30`
 do
     echo "i = $i"
     python3 ./main.py $config $exec_mode $weight_mode $qmode $size $iteration $num_attack $bi
