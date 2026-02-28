@@ -34,7 +34,7 @@ TEST_IMAGE_BATCH_PATH = BATCH_BASE_PATH + "test_image_batch.pickle"
 TEST_LABEL_BATCH_PATH = BATCH_BASE_PATH + "test_label_batch.pickle"
 
 def setup_cnn(r, size):
-    print("setup_fc(%d)" % (size))
+    print("setup_cnn(%d)" % (size))
 
     c = r.count_layers()
     input = core.InputLayer(c, size, size, None, r._gpu)
@@ -96,37 +96,18 @@ def setup_fc(r, size):
 
 def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
     if config==0: # FC
-        if exe_mode==0: # train
-            if wmode==0:
-                wpath = "./wi-fc.csv"
-            elif wmode==1:
-                wpath = "./w-fc.csv"
-            #
-        elif exe_mode==1: # test
-            if wmode==0:
-                wpath = "./wi-fc.csv"
-            elif wmode==1:
-                wpath = "./w-fc.csv"
-            #
-        elif exe_mode==3 or exe_mode==4: # train bp
+        if wmode==0:
+            wpath = "./wi-fc.csv"
+        elif wmode==1:
             wpath = "./w-fc.csv"
         else:
-            wpath = "./wi-fc.csv"
+            print("not yet")
+            return None
         #
     elif config==1: # CNN
-        if exe_mode==0 or  exe_mode==2: # train
-            if wmode==0:
-                wpath = "./wi-cnn.csv"
-            elif wmode==1:
-                wpath = "./w-cnn.csv"
-            #
-        elif exe_mode==1: # test
-            if wmode==0:
-                wpath = "./wi-cnn.csv"
-            elif wmode==1:
-                wpath = "./w-cnn.csv"
-            #
-        elif exe_mode==3 or exe_mode==4: # train bp
+        if wmode==0:
+            wpath = "./wi-cnn.csv"
+        elif wmode==1:
             wpath = "./w-cnn.csv"
         else:
             print("not yet")
@@ -139,14 +120,13 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
     
     r = core.Roster()
     r.set_gpu(my_gpu)
+    # 0:even, 5:std, 7: latest dev.
+    r.wi_mode = 7
+    
     if config==0: # fc with wi
-        setup_fc(r, IMAGE_SIZE) # 28*28
-        # 0:even, 5:std, 7: latest dev.
-        r.wi_mode = 7
+        setup_fc(r, IMAGE_SIZE)
     elif config==1: # cnn with wi
-        print("config CNN", config)
-        setup_cnn(r, IMAGE_SIZE) # 28*28
-        r.wi_mode = 7
+        setup_cnn(r, IMAGE_SIZE)
     else:
         print("error config", config)
         return None
@@ -154,7 +134,6 @@ def setup_dnn(my_gpu, config, exe_mode, wmode=0, qmode=0, batch_size=0):
     
     r._batch_size = batch_size
     r.set_path(wpath)
-    #r.set_scale_input(1)
     r.set_qmode(qmode) # 0:32bit, 1:16bit
     print("batch_size", batch_size)
     r.prepare(batch_size, IMAGE_SIZE, NUM_CLASS)

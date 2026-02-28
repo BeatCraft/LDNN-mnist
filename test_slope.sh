@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # 0:FC, 1:CNN
-config=1
+config=0
 
 # 0:train, 1:test, ...
 exec_mode=1
 
 # weight mode
-# 0:index(uint8), 1:value (float32)
+# 0:index(uint8), 1:value/float for backpropagation
 wmode=0
 
 # quantaization mode
