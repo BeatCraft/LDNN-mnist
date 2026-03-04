@@ -36,68 +36,22 @@ def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration):
     t.w_list = t.make_w_list()
     
     ce = r.evaluate(0)
-    print(ce)
-    r.slope(1)
+    #print(ce)
+    print("+++", ce)
+    r.slope(0)
     
-    for w in t.w_list:
-        li = w.li
-        ni = w.ni
-        ii = w.ii
-        l = r.get_layer_at(li)
-        slope = l.dW[ii][ni]
-        w.slope = slope
+    #for w in t.w_list:
+    #    li = w.li
+    #    ni = w.ni
+    #    ii = w.ii
+    #    l = r.get_layer_at(li)
+    #    slope = l.dW[ii][ni]
+    #    w.slope = slope
     #
-    
-    positive = sorted(t.w_list, key=lambda w: w.slope, reverse=True)
-    top_positive = positive[:64]
-    negative = sorted(t.w_list, key=lambda w: w.slope)
-    top_negative = negative[:64]
-    
-    for w in top_positive:
-        li = w.li
-        ni = w.ni
-        ii = w.ii
-        l = r.get_layer_at(li)
-        wi = w.wi
-        if l.dW[ii][ni]==0.0:
-            continue
-        else: # >0.0:
-            if wi==core.WEIGHT_INDEX_MIN:
-                pass
-            else:
-                #print(l.dW[ii][ni])
-                l.set_weight_index(w.ni, w.ii, wi-1)
-            #
-        #
-    #
-
-    for w in top_negative:
-        li = w.li
-        ni = w.ni
-        ii = w.ii
-        l = r.get_layer_at(li)
-        wi = w.wi
-        if l.dW[ii][ni]==0.0:
-            continue
-        else: # >0.0:
-            if wi==core.WEIGHT_INDEX_MAX:
-                pass
-            else:
-                #print(l.dW[ii][ni])
-                #print(li, ni, ii, l.dW[ii][ni], core.WEIGHT_SET[wi])
-                l.set_weight_index(w.ni, w.ii, wi+1)
-            #
-        #
-    #
-    r.update_weight()
-    ce = r.evaluate(0)
-    print(ce)
-    r.save(wmode)
-    return 0
     
     #for n in range(10):
     cnt = 0
-    while cnt<512:
+    while cnt<attack_num:
         k = random.randint(0, len(t.w_list)-1)
         w = t.w_list[k]
         li = w.li
@@ -114,20 +68,21 @@ def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration):
                 pass
             else:
                 l.set_weight_index(w.ni, w.ii, wi+1)
-                cnt += 1
+                #cnt += 1
             #
         elif l.dW[ii][ni]>0.0: # --
             if wi==core.WEIGHT_INDEX_MIN:
                 pass
             else:
                 l.set_weight_index(w.ni, w.ii, wi-1)
-                cnt += 1
+                #cnt += 1
             #
         #
+        cnt += 1
     #
     r.update_weight()
     ce = r.evaluate(0)
-    print(ce)
+    print("+++", ce)
     r.save(wmode)
         
     return

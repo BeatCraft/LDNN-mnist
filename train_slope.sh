@@ -19,25 +19,25 @@ wmode=0
 qmode=0
 
 # size of batch
-size=1000
+size=60000
 
 #
 # training parameters
 #
 iteration=1
-num_attack=4
+num_attack=64
 bi=0 # batch index
 
 start_time=`date +%s`
 
 
-for i in `seq 1 10`
+for i in `seq 1 1000`
 do
     echo "i = $i"
     python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration $num_attack $bi
-    
-    
 done
+
+
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))
