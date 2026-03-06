@@ -20,7 +20,7 @@ import batch
 
 import mnist
 
-def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration):
+def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo=False):
     print("exec_train_slope()", batch_size)
     r.set_backpropagation(True, 0.005)
         
@@ -36,63 +36,74 @@ def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration):
     t.w_list = t.make_w_list()
     
     ce = r.evaluate(0)
-    #print(ce)
-    print("+++", ce)
-    r.slope(0)
+    ce_alt = 100.0
+    print("CE :", ce)
     
-    #for w in t.w_list:
-    #    li = w.li
-    #    ni = w.ni
-    #    ii = w.ii
-    #    l = r.get_layer_at(li)
-    #    slope = l.dW[ii][ni]
-    #    w.slope = slope
-    #
-    
-    #for n in range(10):
-    cnt = 0
-    while cnt<attack_num:
-        k = random.randint(0, len(t.w_list)-1)
-        w = t.w_list[k]
-        li = w.li
-        ni = w.ni
-        ii = w.ii
-        l = r.get_layer_at(li)
-        wi = w.wi
-        #print(li, ni, ii, l.dW[ii][ni], core.WEIGHT_SET[wi])
+    for n in range(iteration):
+        r.slope(0)
+        cnt = 0
+        attack_list = []
+        while cnt<attack_num:
+            k = random.randint(0, len(t.w_list)-1)
+            w = t.w_list[k]
+            li = w.li
+            ni = w.ni
+            ii = w.ii
+            l = r.get_layer_at(li)
+            wi = w.wi
+            if l.dW[ii][ni]==0.0:
+                pass
+            elif l.dW[ii][ni]<0.0: # ++
+                if wi==core.WEIGHT_INDEX_MAX:
+                    pass
+                else:
+                    w.wi_alt = w.wi
+                    w.wi = wi + 1
+                    l.set_weight_index(w.ni, w.ii, wi+1)
+                    attack_list.append(w)
+                #
+            elif l.dW[ii][ni]>0.0: # --
+                if wi==core.WEIGHT_INDEX_MIN:
+                    pass
+                else:
+                    w.wi_alt = w.wi
+                    w.wi = wi - 1
+                    l.set_weight_index(w.ni, w.ii, wi-1)
+                    attack_list.append(w)
+                #
+            #
+            cnt += 1
+        # while
+        r.update_weight()
+        ce_alt = r.evaluate(0)
+        #print("[%d](%d/%d)" % (n, cnt, attack_num), ce>ce_alt)
+        #print("\t", ce)
+        #print("\t", ce_alt)
         
-        if l.dW[ii][ni]==0.0:
-            pass
-        elif l.dW[ii][ni]<0.0: # ++
-            if wi==core.WEIGHT_INDEX_MAX:
-                pass
+        
+        if ce_alt>ce: # undo
+            if undo:
+                print("[%d](%d/%d)" % (n, cnt, attack_num), ce, "(", ce_alt, ")")
+                for w in attack_list:
+                    li = w.li
+                    l = r.get_layer_at(w.li)
+                    w.wi = w.wi_alt
+                    l.set_weight_index(w.ni, w.ii, w.wi)
+                #
+                r.update_weight()
             else:
-                l.set_weight_index(w.ni, w.ii, wi+1)
-                #cnt += 1
+                print("[%d](%d/%d)" % (n, cnt, attack_num), ce, "->", ce_alt)
+                ce = ce_alt
             #
-        elif l.dW[ii][ni]>0.0: # --
-            if wi==core.WEIGHT_INDEX_MIN:
-                pass
-            else:
-                l.set_weight_index(w.ni, w.ii, wi-1)
-                #cnt += 1
-            #
+        else:
+            #print("\tOK")
+            print("[%d](%d/%d)" % (n, cnt, attack_num), ce, "->", ce_alt)
+            #print("[%d](%d/%d)" % (n, cnt, attack_num), ce>=ce_alt, ce,"->", ce_alt, ce-ce_alt)
+            ce = ce_alt
         #
-        cnt += 1
-    #
-    r.update_weight()
-    ce = r.evaluate(0)
-    print("+++", ce)
+    # for
     r.save(wmode)
-        
     return
-    
-    print("CE:", ce)
-    loop_max = 100
-    for i in range(iteration):
-        ce, hit_rate = t.main_challenge_loop(ce, loop_max, attack_num, True)
-    #
-    r.save(wmode)
 
 def exec_train_bp_mini(b, my_gpu, r, wmode, batch_size):
     print("exec_train_bp_mini()", batch_size)

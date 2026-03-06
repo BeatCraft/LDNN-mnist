@@ -24,20 +24,25 @@ size=60000
 #
 # training parameters
 #
-iteration=1
-num_attack=64
+iteration=100
+num_attack=4
 bi=0 # batch index
+undo=0
 
 start_time=`date +%s`
 
-
-for i in `seq 1 1000`
+#for i in 1024 1024 1024 1024 1024 512 512 512 512 512 256 256 256 256 256 128 128 128 128 128
+#for i in 512 512 512 256 256 256 128 128 128
+for i in 128 128 128 64 64 64
 do
-    echo "i = $i"
+    num_attack=$i
     python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration $num_attack $bi
 done
-
-
+#for i in `seq 1 1000`
+#do
+#    echo "i = $i"
+#    python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration $num_attack $bi
+#done
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))
