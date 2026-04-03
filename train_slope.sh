@@ -32,8 +32,8 @@ undo=0
 start_time=`date +%s`
 
 #for i in 1024 1024 1024 1024 1024 512 512 512 512 512 256 256 256 256 256 128 128 128 128 128
-#for i in 512 512 512 256 256 256 128 128 128
-for i in 128 128 128 64 64 64
+for i in 512 512 512 256 256 256 128 128 128
+#for i in 128 128 128 64 64 64
 do
     num_attack=$i
     python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration $num_attack $bi
