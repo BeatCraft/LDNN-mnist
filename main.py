@@ -20,6 +20,38 @@ import batch
 
 import mnist
 
+def check_max_grad(layer):
+    # layer is MaxLayer
+    grad_metal = layer.grad.copy()
+
+    B = layer._batch_size
+    ch = layer._ch
+    out_w = layer._x
+    out_h = layer._y
+    in_w = out_w * 2
+    in_h = out_h * 2
+
+    delta = layer.delta.reshape(B, ch, out_h, out_w)
+    mask = layer._mask_array.reshape(B, ch, in_h, in_w)
+
+    grad_np = np.zeros((B, ch, in_h, in_w), dtype=np.float32)
+
+    for b in range(B):
+        for c in range(ch):
+            for y in range(out_h):
+                for x in range(out_w):
+                    d = delta[b, c, y, x]
+                    grad_np[b, c, y*2:y*2+2, x*2:x*2+2] = (
+                        mask[b, c, y*2:y*2+2, x*2:x*2+2] * d
+                    )
+
+    grad_np = grad_np.reshape(B, ch, in_h * in_w)
+
+    print("=== Max grad check ===")
+    print("max abs diff:", np.max(np.abs(grad_metal - grad_np)))
+    print("mean abs diff:", np.mean(np.abs(grad_metal - grad_np)))
+    print("sign match:", np.mean(np.sign(grad_metal) == np.sign(grad_np)))
+    
 def train_slope(b, my_gpu, r, wmode, batch_size, attack_num, t, ce, n, undo=False):
     r.slope(0)
     cnt = 0
@@ -103,6 +135,81 @@ def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration, und
     
     for n in range(iteration):
         ce = train_slope(b, my_gpu, r, wmode, batch_size, attack_num, t, ce, n, undo)
+    #
+    r.save(wmode)
+    return
+
+def exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo=False):
+    print("exec_train_slope()", batch_size)
+    r.set_backpropagation(True, 0.005)
+    mini_batch_num = int(b.batch_size / batch_size)
+    
+    bidx_list = list(range(mini_batch_num))
+    random.shuffle(bidx_list)
+    
+    t = train.Train(r)
+    t.w_lists = t.make_w_list_by_layer()
+
+    ce_alt = 100.0
+    
+    for bidx in bidx_list:
+    #for bidx in range(1):
+        #bidx = 0
+        #print(bidx)
+        (data_array, label_list, label_array) = b.get_batch(batch_size, bidx*batch_size)
+        r.direct_set_data(data_array)
+        r.direct_set_label(label_array)
+        ce = r.evaluate(0)
+        #
+        ce = t.train_slope2(b, my_gpu, r, wmode, batch_size, attack_num, ce, bidx, undo)
+        r.reset()
+        #
+    #
+    r.save(wmode)
+    return
+    
+def exec_train_slope_mini(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo=False):
+    print("exec_train_slope()", batch_size)
+    r.set_backpropagation(True, 0.005)
+    mini_batch_num = int(b.batch_size / batch_size)
+    
+    bidx_list = list(range(mini_batch_num))
+    random.shuffle(bidx_list)
+    
+    t = train.Train(r)
+    t.w_list = t.make_w_list()
+    #t.w_list = t.make_w_list([core.LAYER_TYPE_CONV])
+    #t.w_list = t.make_w_list([core.LAYER_TYPE_HIDDEN, core.LAYER_TYPE_OUTPUT])
+
+    ce_alt = 100.0
+    """
+    (data_array, label_list, label_array) = b.get_batch(batch_size, 0*batch_size)
+    r.direct_set_data(data_array)
+    r.direct_set_label(label_array)
+    ce = r.evaluate(0)
+    r.slope(0)
+
+    for li in range(r.count_layers()):
+        layer = r.get_layer_at(li)
+        if layer.get_type() == core.LAYER_TYPE_CONV:
+            layer.check_conv_grad(0)
+        elif layer.get_type() == core.LAYER_TYPE_MAX:
+            check_max_grad(layer)
+        #
+    #
+    return 0
+    """
+    
+    for bidx in bidx_list:
+        (data_array, label_list, label_array) = b.get_batch(batch_size, bidx*batch_size)
+        r.direct_set_data(data_array)
+        r.direct_set_label(label_array)
+        ce = r.evaluate(0)
+        #
+        ce = t.train_slope(b, my_gpu, r, wmode, batch_size, attack_num, ce, bidx, undo)
+        r.reset()
+        #
+        
     #
     r.save(wmode)
     return
@@ -220,7 +327,7 @@ def main():
         attack_num = int(argvs[7])
         batch_index = int(argvs[8])
         print("iteration:", iteration)
-        print("num_attack:", num_attack)
+        print("attack_num:", attack_num)
         print("batch_index:", batch_index)
     #
 
@@ -260,7 +367,8 @@ def main():
         b.setDataPath(mnist.TRAIN_IMAGE_BATCH_PATH)
         b.setLabelPath(mnist.TRAIN_LABEL_BATCH_PATH)
         print(b.loadDataAndLebel())
-        exec_train_mini(b, my_gpu, r, wmode, batch_size, attack_num, iteration)
+        undo = True
+        exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo)
     elif exec_mode==3: # train bp
         print("temporaly, disabled")
         pass
