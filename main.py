@@ -139,7 +139,7 @@ def exec_train_slope(b, my_gpu, r, wmode, batch_size, attack_num, iteration, und
     r.save(wmode)
     return
 
-def exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo=False):
+def exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, iteration, undo=False):
     print("exec_train_slope()", batch_size)
     r.set_backpropagation(True, 0.005)
     mini_batch_num = int(b.batch_size / batch_size)
@@ -148,20 +148,24 @@ def exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, attack_num, iteratio
     random.shuffle(bidx_list)
     
     t = train.Train(r)
-    t.w_lists = t.make_w_list_by_layer()
 
     ce_alt = 100.0
-    
+    qfc = 0.99
+    qcnn = 0.95
+    #attack_max_list = [0, 3, 0, 3, 0, 48, 8] # CNN, this is tempolary
+    #attack_max_list = [0, 256, 128, 64]
+    #attack_max_list = [0, 128, 64, 32]
+    #attack_max_list = [0, 64, 0, 32, 0, 16, 8]
+    attack_max_list = [0, 32, 0, 16, 0, 8, 4]
+    #attack_max_list = [0, 32, 16, 8]
+        
     for bidx in bidx_list:
-    #for bidx in range(1):
-        #bidx = 0
-        #print(bidx)
         (data_array, label_list, label_array) = b.get_batch(batch_size, bidx*batch_size)
         r.direct_set_data(data_array)
         r.direct_set_label(label_array)
         ce = r.evaluate(0)
         #
-        ce = t.train_slope2(b, my_gpu, r, wmode, batch_size, attack_num, ce, bidx, undo)
+        ce = t.train_slope2(b, my_gpu, r, wmode, batch_size, ce, bidx, qfc, qcnn, attack_max_list, undo)
         r.reset()
         #
     #
@@ -306,9 +310,8 @@ def exec_test(b, my_gpu, r):
 def main():
     argvs = sys.argv
     argc = len(argvs)
-    print(argvs)
-    print(argc)
-    if argc<5:
+    print(argc, argvs)
+    if argc<7:
         print("error", argc)
     #
     config = int(argvs[1])
@@ -316,20 +319,22 @@ def main():
     wmode = int(argvs[3]) # wi or value
     qmode = int(argvs[4])
     batch_size = int(argvs[5])
+    iteration = int(argvs[6])
+    
     print("config:", config)
     print("exec_mode:", exec_mode)
     print("wmode:", wmode)
     print("qmode:", qmode)
     print("batch_size:", batch_size)
-    if argc==9:
-        iteration = int(argvs[6])
-        num_attack = int(argvs[7])
-        attack_num = int(argvs[7])
-        batch_index = int(argvs[8])
-        print("iteration:", iteration)
-        print("attack_num:", attack_num)
-        print("batch_index:", batch_index)
-    #
+    print("iteration:", iteration)
+    
+    #if argc==9:
+    #    num_attack = int(argvs[7])
+    #    attack_num = int(argvs[7])
+    #    batch_index = int(argvs[8])
+    #    print("attack_num:", attack_num)
+    #    print("batch_index:", batch_index)
+    
 
     #
     # batch
@@ -368,7 +373,9 @@ def main():
         b.setLabelPath(mnist.TRAIN_LABEL_BATCH_PATH)
         print(b.loadDataAndLebel())
         undo = True
-        exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, attack_num, iteration, undo)
+        exec_train_slope_mini2(b, my_gpu, r, wmode, batch_size, iteration, undo)
+        #attack_num = 64
+        #exec_train_mini(b, my_gpu, r, wmode, batch_size, attack_num, iteration)
     elif exec_mode==3: # train bp
         print("temporaly, disabled")
         pass

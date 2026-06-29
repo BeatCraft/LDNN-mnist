@@ -19,22 +19,23 @@ wmode=0
 qmode=0
 
 # size of batch
-size=1000
+size=500
 
 #
 # training parameters
 #
 iteration=1
-attack_num=5000
-bi=0 # batch index
-undo=0
+#attack_num=5000
+#bi=0 # batch index
+#undo=0
 
 start_time=`date +%s`
 
 for i in `seq 1 100`
 do
     echo $i
-    python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration $attack_num $bi
+    python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration
+    # $attack_num $bi
 done
 
 end_time=`date +%s`

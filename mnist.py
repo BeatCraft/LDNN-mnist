@@ -80,12 +80,12 @@ def setup_fc(r, size):
     
     # hidden 1
     c = r.count_layers()
-    hidden_1 = core.HiddenLayer(c, size, 512, input, r._gpu)
+    hidden_1 = core.HiddenLayer(c, size, 256, input, r._gpu)
     r.layers.append(hidden_1)
         
     # hidden 2
     c = r.count_layers()
-    hidden_2 = core.HiddenLayer(c, 512, 256, hidden_1, r._gpu)
+    hidden_2 = core.HiddenLayer(c, 256, 256, hidden_1, r._gpu)
     r.layers.append(hidden_2)
     
     # output

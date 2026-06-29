@@ -17,10 +17,12 @@ qmode=0
 # size of batch
 size=1000
 
+# dummy
+iteration=1
 
 start_time=`date +%s`
 
-python3 ./main.py $config $exec_mode $wmode $qmode $size
+python3 ./main.py $config $exec_mode $wmode $qmode $size $iteration
 
 end_time=`date +%s`
 elapsed_time=$((end_time - start_time))
